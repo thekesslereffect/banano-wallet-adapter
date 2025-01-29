@@ -158,7 +158,7 @@ The components are built with Tailwind CSS and can be customized through themes 
 
 - Seeds and private keys are never stored in localStorage
 - All sensitive operations are performed client-side
-- Uses the battle-tested Banani library for core wallet operations
+- Uses the battle-tested Banani library for core wallet operations. [Thanks to prussia.dev!](https://github.com/stjet/banani)
 
 ## Development
 
