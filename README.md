@@ -177,6 +177,55 @@ NEXT_PUBLIC_RPC_URL=https://kaliumapi.appditto.com/api
   - Detailed error handling
   - Comprehensive hooks
 
+## 🎮 Example Components
+
+The template includes several example components to demonstrate common wallet functionality:
+
+### 1. Balance Display
+```tsx
+import { Balance } from "@/components/examples/Balance";
+```
+- Shows current wallet balance
+- Auto-updates when transactions occur
+- Clean, minimal UI design
+
+### 2. BANANO QR Code
+```tsx
+import { BananoQR } from "@/components/examples/BananoQR";
+```
+- Generates QR code for wallet address
+- One-click address copying
+- Perfect for receiving payments
+
+### 3. Send BANANO Form
+```tsx
+import { SendBananoForm } from "@/components/examples/Send";
+```
+- User-friendly send interface
+- Address and amount validation
+- Transaction status feedback
+- Error handling
+
+### 4. Transaction History
+```tsx
+import { TransactionHistory } from "@/components/examples/TransactionHistory";
+```
+- Lists recent transactions
+- Shows send/receive operations
+- Includes transaction amounts and timestamps
+- Links to block explorer
+
+### 5. Coin Flip Game
+```tsx
+import { CoinFlip } from "@/components/examples/CoinFlip";
+```
+- Interactive betting game
+- Bet 0.1 BAN on heads or tails
+- Server-side randomization
+- Configurable house edge (default 4%)
+- Automatic payout for winners (2x bet)
+- Requires game wallet setup (see env.local.example)
+
 ## 🛠 Development Tools
 
 ```bash
