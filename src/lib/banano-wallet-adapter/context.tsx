@@ -173,7 +173,7 @@ export function BananoWalletProvider({
       
       // Get initial balance - this won't throw for new accounts
       const initialBalance = await getBalance(newWallet.address);
-      await receivePending();
+
       
       // Set all state at once
       setWallet(newWallet);
@@ -181,7 +181,7 @@ export function BananoWalletProvider({
       setSeed(walletSeed);
       setBalance(initialBalance);
       setIsConnected(true);
-
+      
       
     } catch (error) {
       const formattedError = formatError(error);
@@ -295,7 +295,7 @@ export function BananoWalletProvider({
     }
 
     try {
-      const history = await rpc.get_account_history(address as `ban_${string}`, 50);
+      const history = await rpc.get_account_history(address as `ban_${string}`, 10);
       if (!history || !history.history) {
         return [];
       }
