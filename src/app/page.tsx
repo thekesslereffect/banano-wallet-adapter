@@ -5,6 +5,7 @@ import { SendBananoForm } from '@/components/examples/Send';
 import { TransactionHistory } from '@/components/examples/TransactionHistory';
 import { Balance } from '@/components/examples/Balance';
 import { BananoQR } from '@/components/examples/BananoQR';
+import { CoinFlip } from '@/components/examples/CoinFlip';
 
 export default function Home() {
   return (
@@ -26,6 +27,7 @@ export default function Home() {
               <BananoQR />
               <SendBananoForm />
               <TransactionHistory />
+              <CoinFlip />
             </div>
           </div>
         </div>

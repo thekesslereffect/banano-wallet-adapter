@@ -111,6 +111,9 @@ export function BananoWalletProvider({
     if (!wallet || !isConnected || !address) return;
 
     try {
+      // First receive any pending transactions
+      await wallet.receive_all();
+
       const balance = await getBalance(address);
       setBalance(balance);
     } catch (error) {
@@ -163,6 +166,7 @@ export function BananoWalletProvider({
       
       // Get initial balance - this won't throw for new accounts
       const initialBalance = await getBalance(newWallet.address);
+      await receivePending();
       
       // Set all state at once
       setWallet(newWallet);
@@ -170,6 +174,8 @@ export function BananoWalletProvider({
       setSeed(walletSeed);
       setBalance(initialBalance);
       setIsConnected(true);
+
+      
     } catch (error) {
       const formattedError = formatError(error);
       console.error('Error connecting wallet:', formattedError);
