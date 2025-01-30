@@ -1,6 +1,6 @@
 # Banano Wallet Adapter Template
 
-![Banano Wallet Adapter](/docs/Hero.png)
+![Banano Wallet Adapter](https://github.com/thekesslereffect/banano-wallet-adapter/blob/master/public/docs/Hero.png)
 
 A modern, production-ready starter template for building Banano applications with React and Next.js. This template provides everything you need to start building a Banano-enabled web application.
 
