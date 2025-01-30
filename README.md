@@ -22,7 +22,6 @@ npm run dev
 2. Start customizing:
 - `app/page.tsx`: Main landing page
 - `components/*`: React components
-- `styles/*`: Custom styling and themes
 - `lib/banano-wallet-adapter/*`: Core wallet functionality
 
 ## 📁 Project Structure
@@ -202,7 +201,7 @@ npm run typecheck
 
 ## 🤝 Contributing
 
-Currently in progress...
+Feel free to contribute! Open an issue or pull request if you have a bug or want to add a feature.
 
 ## 📄 License
 

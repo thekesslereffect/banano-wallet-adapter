@@ -52,7 +52,7 @@ export function SendBananoForm() {
               placeholder="Recipient Address (ban_...)"
               value={toAddress}
               onChange={(e) => setToAddress(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm"
+              className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm border-none"
               disabled={isLoading}
             />
           </div>
@@ -64,7 +64,7 @@ export function SendBananoForm() {
               placeholder="Amount (BAN)"
               value={amount}
               onChange={(e) => setAmount(e.target.value)}
-              className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm"
+              className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm border-none"
               disabled={isLoading}
             />
           </div>

@@ -1,10 +1,10 @@
 'use client';
 
-import { BananoWalletProvider } from '@/lib/banano-wallet-adapter';
 import { BananoConnectButton } from '@/components/BananoConnectButton';
-import { WalletDetails } from '@/components/examples/details';
-import { SendBananoForm } from '@/components/examples/send';
-import { WalletInfo } from '@/components/examples/info';
+import { SendBananoForm } from '@/components/examples/Send';
+import { TransactionHistory } from '@/components/examples/TransactionHistory';
+import { Balance } from '@/components/examples/Balance';
+import { BananoQR } from '@/components/examples/BananoQR';
 
 export default function Home() {
   return (
@@ -21,10 +21,11 @@ export default function Home() {
           </div>
           <div className="flex flex-col items-center space-y-16">
             <BananoConnectButton theme="black" modalTheme="light" />
-            <div className="flex gap-16"> 
-              <WalletInfo />
-              <WalletDetails />
+            <div className="grid grid-cols-3 gap-16"> 
+              <Balance />
+              <BananoQR />
               <SendBananoForm />
+              <TransactionHistory />
             </div>
           </div>
         </div>
