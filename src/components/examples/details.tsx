@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useState } from 'react';
-import { useWallet } from '../lib/banano-wallet-adapter';
+import { useWallet } from '@/lib/banano-wallet-adapter';
 import QRCode from 'qrcode';
 
 interface Transaction {

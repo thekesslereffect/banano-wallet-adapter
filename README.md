@@ -1,179 +1,207 @@
-# Banano Wallet Adapter
+# Banano Wallet Adapter Template
 
-A modern, easy-to-use wallet adapter for Banano applications built with React and Next.js. This adapter provides a seamless way to integrate Banano wallet functionality into your web applications.
+A modern, production-ready starter template for building Banano applications with React and Next.js. This template provides everything you need to start building a Banano-enabled web application.
 
-## Features
+## 🚀 Getting Started
 
-- 🔒 **Secure Wallet Management**: Create, import, and manage Banano wallets securely
-- 💸 **Transaction Handling**: Send and receive BANANO with ease
-- 🔄 **Auto-receive Pending**: Automatically receive pending transactions
-- 📊 **Transaction History**: View detailed transaction history
-- 📱 **QR Code Generation**: Generate QR codes for wallet addresses
-- 🎨 **Beautiful UI**: Modern, responsive design with customizable themes
-- 🔌 **Easy Integration**: Simple React components and hooks
-- 📱 **Mobile Responsive**: Works great on all devices
-
-## Installation
-
+1. Use this template:
 ```bash
-npm install banano-wallet-adapter
-# or
-yarn add banano-wallet-adapter
+# Clone the repository
+git clone https://github.com/your-username/banano-wallet-adapter
+cd banano-wallet-adapter
+
+# Install dependencies
+npm install
+
+# Start the development server
+npm run dev
 ```
 
-## Quick Start
+2. Start customizing:
+- `app/page.tsx`: Main landing page
+- `components/*`: React components
+- `styles/*`: Custom styling and themes
+- `lib/banano-wallet-adapter/*`: Core wallet functionality
 
-1. Wrap your app with the `BananoWalletProvider`:
+## 📁 Project Structure
 
+```
+banano-wallet-adapter/
+├── app/                      # Next.js app directory
+│   ├── layout.tsx           # Root layout component
+│   ├── page.tsx             # Landing page
+│   └── globals.css          # Global styles
+├── components/              # React components
+│   ├── BananoConnectButton.tsx  # Wallet connect button
+│   └── examples/            # Example components
+│       └── details.tsx      # Wallet details example
+├── lib/                     # Core libraries
+│   └── banano-wallet-adapter/ # Wallet adapter
+│       ├── context.tsx      # Wallet context
+│       ├── index.ts         # Main exports
+│       └── types.ts         # TypeScript types
+└── providers/               # App providers
+    └── Providers.tsx        # Client-side providers wrapper
+```
+
+## 🔧 Implementation
+
+### Setting up the Provider
+
+1. The wallet provider is implemented as a client component in `providers/Providers.tsx`:
 ```tsx
-import { BananoWalletProvider } from 'banano-wallet-adapter';
+'use client';
+import { BananoWalletProvider } from "@/lib/banano-wallet-adapter";
 
-function App() {
+export function Providers({ children }) {
+  return <BananoWalletProvider>{children}</BananoWalletProvider>;
+}
+```
+
+2. Wrap your app in `layout.tsx`:
+```tsx
+import { Providers } from "@/providers/Providers";
+
+export default function RootLayout({ children }) {
   return (
-    <BananoWalletProvider>
-      <YourApp />
-    </BananoWalletProvider>
+    <html>
+      <body>
+        <Providers>{children}</Providers>
+      </body>
+    </html>
   );
 }
 ```
 
-2. Use the connect button component:
+### Using the Wallet
 
+1. Import and use the connect button:
 ```tsx
-import { BananoConnectButton } from 'banano-wallet-adapter';
+import { BananoConnectButton } from "@/components/BananoConnectButton";
 
-function YourApp() {
-  return (
-    <BananoConnectButton 
-      theme="black"     // Options: "black", "white", "blue", "yellow", "green"
-      modalTheme="light" // Options: "light", "dark"
-    />
-  );
+export default function YourComponent() {
+  return <BananoConnectButton />;
 }
 ```
 
-3. Access wallet functionality with the `useWallet` hook:
-
+2. Access wallet context in client components:
 ```tsx
-import { useWallet } from 'banano-wallet-adapter';
+'use client';
+import { useBananoWallet } from "@/lib/banano-wallet-adapter";
 
-function WalletInfo() {
-  const { 
-    address,
-    balance,
-    isConnected,
-    connect,
-    disconnect,
-    sendBanano,
-    receivePending,
-    getTransactionHistory
-  } = useWallet();
-
-  // Example: Send BANANO
-  const handleSend = async () => {
-    try {
-      const hash = await sendBanano('ban_address', '1.0');
-      console.log('Transaction hash:', hash);
-    } catch (error) {
-      console.error('Error sending BANANO:', error);
-    }
-  };
-
-  return (
-    <div>
-      {isConnected ? (
-        <>
-          <p>Address: {address}</p>
-          <p>Balance: {balance} BAN</p>
-        </>
-      ) : (
-        <p>Wallet not connected</p>
-      )}
-    </div>
-  );
+export function WalletInfo() {
+  const { wallet, connected } = useBananoWallet();
+  // ... use wallet state
 }
 ```
 
-## Components
+## 🎨 Customization
 
-### BananoConnectButton
+### 1. Themes
+The template comes with several pre-built themes:
+- Black (Default)
+- White
+- Blue
+- Yellow
+- Green
 
-A customizable button component that handles wallet connection:
-
+Customize the connect button:
 ```tsx
 <BananoConnectButton 
-  theme="black"      // Visual theme of the button
-  modalTheme="light" // Theme for the connection modal
+  theme="black"      // Choose your theme
+  modalTheme="light" // Light or dark modal
 />
 ```
 
-### WalletDetails
-
-A component that displays wallet information, QR code, and transaction history:
+### 2. Components
+Each component is designed to be easily customized:
 
 ```tsx
-import { WalletDetails } from 'banano-wallet-adapter';
-
-function App() {
-  return <WalletDetails />;
+// components/wallet/details.tsx
+export function WalletDetails({ 
+  showQR = true,         // Toggle QR code
+  showHistory = true,    // Toggle transaction history
+  maxHistory = 10        // Number of transactions to show
+}) {
+  // Your customizations here
 }
 ```
 
-## Hook API
+### 3. Styling
+The template uses Tailwind CSS with custom theme extensions:
 
-The `useWallet` hook provides access to the following wallet functionality:
-
-```typescript
-interface WalletContextType {
-  // State
-  address: string | null;
-  balance: string;
-  seed: string | null;
-  pendingBalance: string;
-  isConnected: boolean;
-  isConnecting: boolean;
-  mnemonic: string;
-
-  // Methods
-  connect: (seedOrPrivateKey?: string) => Promise<void>;
-  disconnect: () => void;
-  generateNewWallet: () => Promise<{ mnemonic: string; address: string }>;
-  sendBanano: (toAddress: string, amount: string) => Promise<string>;
-  receivePending: () => Promise<string[]>;
-  getTransactionHistory: () => Promise<Array<{
-    type: 'send' | 'receive';
-    account: string;
-    amount: string;
-    hash: string;
-    timestamp: number;
-  }>>;
+```js
+// tailwind.config.js
+module.exports = {
+  theme: {
+    extend: {
+      colors: {
+        primary: {...},
+        secondary: {...}
+      }
+    }
+  }
 }
 ```
 
-## Styling
+## 🔒 Security Best Practices
 
-The components are built with Tailwind CSS and can be customized through themes and CSS classes. The default styling provides a clean, modern look that follows best practices for crypto wallet UIs.
+1. **Environment Variables**
+```env
+# .env.local
+NEXT_PUBLIC_RPC_URL=https://kaliumapi.appditto.com/api
+```
 
-## Security
+2. **Wallet Security**
+- Seeds and private keys are never stored
+- All operations are client-side
+- Uses [Banani](https://github.com/stjet/banani) for core operations
 
-- Seeds and private keys are never stored in localStorage
-- All sensitive operations are performed client-side
-- Uses the battle-tested Banani library for core wallet operations. [Thanks to prussia.dev!](https://github.com/stjet/banani)
+## 📦 Core Features
 
-## Development
+- ✅ Wallet Connection
+  - Create new wallet
+  - Import from seed/mnemonic
+  - Auto-disconnect protection
+- ✅ Transactions
+  - Send BANANO
+  - Receive pending
+  - Transaction history
+- ✅ UI Components
+  - Connect button
+  - Wallet details
+  - QR code generation
+- ✅ Developer Experience
+  - TypeScript support
+  - Detailed error handling
+  - Comprehensive hooks
 
-To run the development server:
+## 🛠 Development Tools
 
 ```bash
+# Run development server
 npm run dev
-# or
-yarn dev
+
+# Build for production
+npm run build
+
+# Run tests
+npm test
+
+# Type checking
+npm run typecheck
 ```
 
-## Contributing
+## 📚 Resources
+
+- [Next.js Documentation](https://nextjs.org/docs)
+- [Banani Documentation](https://banani.prussia.dev/)
+- [Tailwind CSS](https://tailwindcss.com/docs)
+
+## 🤝 Contributing
 
 Currently in progress...
 
-## License
+## 📄 License
 
 MIT License - feel free to use this in your projects!

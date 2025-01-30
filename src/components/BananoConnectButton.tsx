@@ -1,5 +1,7 @@
-import { useState } from 'react';
-import { useWallet } from './context';
+'use client';
+
+import React, { useState } from 'react';
+import { useWallet } from '@/lib/banano-wallet-adapter';
 
 interface ButtonTheme {
   backgroundColor: string;
@@ -319,7 +321,7 @@ export function BananoConnectButton({
             </div>
           </div>
         </div>
-      </div>
+       </div>
       )}    
     </div>
   );

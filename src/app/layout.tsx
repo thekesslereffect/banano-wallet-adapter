@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Geist, Figtree, Inter } from "next/font/google";
 import "./globals.css";
+import { Providers } from "@/providers/Providers";
 
 const geistSans = Geist({
   variable: "--font-sans",
@@ -30,9 +31,9 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body
-        className={`${inter.variable} antialiased`}
+        className={inter.className}
       >
-        {children}
+        <Providers>{children}</Providers>
       </body>
     </html>
   );
