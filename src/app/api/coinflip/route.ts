@@ -22,12 +22,24 @@ export async function POST(req: Request) {
       return NextResponse.json({ error: 'Invalid input' }, { status: 400 });
     }
 
-    // Generate random result (true = heads, false = tails)
-    const result = Math.random() < 0.5;
-    const resultString = result ? 'heads' : 'tails';
-    const playerWon = playerGuess === resultString;
+    // First generate a fair coin flip
+    const fairResult = Math.random() < 0.5;
+    const fairResultString = fairResult ? 'heads' : 'tails';
+    
+    // Then apply house edge by giving 4% chance to flip the result in house's favor
+    const applyHouseEdge = Math.random() < 0.04;
+    const finalResultString = applyHouseEdge ? (fairResultString === 'heads' ? 'tails' : 'heads') : fairResultString;
+    
+    const playerWon = playerGuess === finalResultString;
 
-    await gameWallet.receive_all();
+    // Try to receive any pending transactions, ignore unreceivable errors
+    try {
+      await gameWallet.receive_all();
+    } catch (err: unknown) {
+      if (err instanceof Error && !err.message.includes('Unreceivable')) {
+        throw err;
+      }
+    }
 
     // If player won, send back 0.2 BANANO (2x their bet)
     if (playerWon) {
@@ -36,7 +48,7 @@ export async function POST(req: Request) {
         return NextResponse.json({
           success: true,
           won: true,
-          result: resultString,
+          result: finalResultString,
           hash
         });
       } catch (error) {
@@ -52,7 +64,7 @@ export async function POST(req: Request) {
     return NextResponse.json({
       success: true,
       won: false,
-      result: resultString
+      result: finalResultString
     });
 
   } catch (error) {

@@ -112,7 +112,14 @@ export function BananoWalletProvider({
 
     try {
       // First receive any pending transactions
-      await wallet.receive_all();
+      try {
+        await wallet.receive_all();
+      } catch (err: unknown) {
+        // Ignore unreceivable errors as they're not critical
+        if (err instanceof Error && !err.message.includes('Unreceivable')) {
+          throw err;
+        }
+      }
 
       const balance = await getBalance(address);
       setBalance(balance);
