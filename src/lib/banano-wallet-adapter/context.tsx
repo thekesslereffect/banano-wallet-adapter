@@ -245,22 +245,13 @@ export function BananoWalletProvider({
     if (!wallet || !address) {
       throw new Error('Wallet not connected');
     }
-
     try {
-      // Validate Banano address format
       if (!toAddress.startsWith('ban_') || toAddress.length !== 64) {
         throw new Error('Invalid Banano address format');
       }
-
-      // Convert amount to number for sending
       const numericAmount = Number(amount).toString();
-      
-      // Send the transaction
       const hash = await wallet.send(toAddress as `ban_${string}`, numericAmount as `${number}`);
-
-      // Update balances after sending
       await updateBalances();
-      
       return hash;
     } catch (error) {
       const formattedError = formatError(error);
@@ -275,12 +266,8 @@ export function BananoWalletProvider({
     }
 
     try {
-      // Receive all pending blocks
       const hashes = await wallet.receive_all();
-      
-      // Update balances after receiving
       await updateBalances();
-      
       return hashes || [];
     } catch (error) {
       const formattedError = formatError(error);
@@ -314,10 +301,9 @@ export function BananoWalletProvider({
     }
   };
 
-  // Set up periodic balance updates
   useEffect(() => {
     if (isConnected) {
-      const interval = setInterval(updateBalances, 10000); // Update every 10 seconds
+      const interval = setInterval(updateBalances, 10000);
       return () => clearInterval(interval);
     }
   }, [isConnected, address]);

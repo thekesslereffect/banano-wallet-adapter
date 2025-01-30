@@ -21,7 +21,7 @@ interface ModalTheme {
   secondaryButton: string;
 }
 
-type ThemeName = 'black' | 'blue' | 'yellow' | 'green';
+type ThemeName = 'black' | 'white' | 'blue' | 'yellow' | 'green';
 type ModalThemeName = 'light' | 'dark';
 
 const themes: Record<ThemeName, ButtonTheme> = {
@@ -30,6 +30,12 @@ const themes: Record<ThemeName, ButtonTheme> = {
     textColor: 'text-white',
     hoverColor: 'hover:from-black hover:to-zinc-900',
     shadowColor: 'shadow-zinc-900/20 hover:shadow-zinc-900/30',
+  },
+  white: {
+    backgroundColor: 'bg-gradient-to-b from-white to-zinc-100',
+    textColor: 'text-black',
+    hoverColor: 'hover:from-zinc-100 hover:to-zinc-200',
+    shadowColor: 'shadow-zinc-100/20 hover:shadow-zinc-100/30',
   },
   blue: {
     backgroundColor: 'bg-gradient-to-b from-blue-500 to-blue-600',
