@@ -4,6 +4,10 @@ import * as banani from 'banani';
 const GAME_WALLET_SEED = process.env.GAME_WALLET_SEED;
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://kaliumapi.appditto.com/api';
 
+// Game settings
+const HOUSE_EDGE = true;
+const HOUSE_EDGE_PERCENTAGE = 0.04;
+
 if (!GAME_WALLET_SEED) {
   throw new Error('GAME_WALLET_SEED environment variable is not set');
 }
@@ -25,10 +29,15 @@ export async function POST(req: Request) {
     // First generate a fair coin flip
     const fairResult = Math.random() < 0.5;
     const fairResultString = fairResult ? 'heads' : 'tails';
+    let finalResultString = '';
+    if (HOUSE_EDGE) {
+      // Then apply house edge by giving 4% chance to flip the result in house's favor
+      const applyHouseEdge = Math.random() < HOUSE_EDGE_PERCENTAGE;
+      finalResultString = applyHouseEdge ? (fairResultString === 'heads' ? 'tails' : 'heads') : fairResultString;
+    } else {
+      finalResultString = fairResultString;
+    }
     
-    // Then apply house edge by giving 4% chance to flip the result in house's favor
-    const applyHouseEdge = Math.random() < 0.04;
-    const finalResultString = applyHouseEdge ? (fairResultString === 'heads' ? 'tails' : 'heads') : fairResultString;
     
     const playerWon = playerGuess === finalResultString;
 
