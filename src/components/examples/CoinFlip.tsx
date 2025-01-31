@@ -62,7 +62,7 @@ export function CoinFlip() {
         hash: data.hash,
       });
       
-      await getUserBalance();
+      // await getUserBalance(); // This will update the balance in case we want to check it after the game
       await getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
         setGameBalance(balance);
       });

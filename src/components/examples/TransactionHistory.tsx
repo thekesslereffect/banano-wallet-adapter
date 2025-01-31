@@ -12,38 +12,45 @@ interface Transaction {
 }
 
 export function TransactionHistory() {
-  const { address, isConnected, getTransactionHistory } = useWallet();
+  const { address, isConnected, getTransactionHistory, balance } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
 
-  // Load transaction history
+  // Load transaction history on mount and when balance changes
   useEffect(() => {
-    if (!isConnected) {
+    if (!isConnected || !address) {
       setTransactions([]);
       return;
     }
 
+    let isMounted = true;
     const fetchTransactions = async () => {
       try {
-        if (isInitialLoad) {
+        if (isInitialLoad && isMounted) {
           setIsLoading(true);
         }
         const history = await getTransactionHistory(address as `ban_${string}`);
-        setTransactions(history);
+        if (isMounted) {
+          setTransactions(history);
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        }
       } catch (error) {
         console.error(error);
-      } finally {
-        setIsLoading(false);
-        setIsInitialLoad(false);
+        if (isMounted) {
+          setIsLoading(false);
+          setIsInitialLoad(false);
+        }
       }
     };
 
     fetchTransactions();
-    const interval = setInterval(fetchTransactions, 10000);
 
-    return () => clearInterval(interval);
-  }, [isConnected, getTransactionHistory, address, isInitialLoad]);
+    return () => {
+      isMounted = false;
+    };
+  }, [isConnected, address, balance]);
 
   if (!isConnected) return null;
 

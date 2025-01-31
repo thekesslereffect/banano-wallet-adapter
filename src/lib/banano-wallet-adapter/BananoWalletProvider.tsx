@@ -7,6 +7,7 @@ import { EncryptedStorage } from '@/lib/banano-wallet-adapter/SecureStorage';
 
 // Initialize RPC
 const rpc = new banani.RPC('https://kaliumapi.appditto.com/api');
+const REFRESH_INTERVAL = 5; // 5 seconds. Update as needed
 
 interface BananoError {
   message: string;
@@ -108,6 +109,10 @@ export function BananoWalletProvider({
       setAddress(newWallet.address);
       setSeed(finalSeed);
       setIsConnected(true);
+      
+      // Get initial balance
+      const initialBalance = await getBalance(newWallet.address);
+      setBalance(initialBalance);
 
       // Initial balance update will happen via the useEffect
     } catch (error) {
@@ -176,7 +181,7 @@ export function BananoWalletProvider({
       } finally {
         if (mounted) {
           setIsLoadingBalance(false);
-          timeoutId = setTimeout(updateBalance, 10000);
+          timeoutId = setTimeout(updateBalance, 1000 * REFRESH_INTERVAL);
         }
       }
     };
