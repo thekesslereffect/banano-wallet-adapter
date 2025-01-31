@@ -91,7 +91,7 @@ export function CoinFlip() {
         </p>
         <div className="flex gap-4">
           <button
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-xl ${
               selectedGuess === 'heads'
                 ? 'bg-black text-white'
                 : 'bg-gray-100 hover:bg-gray-200'
@@ -102,7 +102,7 @@ export function CoinFlip() {
             Heads
           </button>
           <button
-            className={`px-4 py-2 rounded-lg ${
+            className={`px-4 py-2 rounded-xl ${
               selectedGuess === 'tails'
                 ? 'bg-black text-white'
                 : 'bg-gray-100 hover:bg-gray-200'
@@ -115,19 +115,19 @@ export function CoinFlip() {
         </div>
       </div>
       <button
-        className="w-full py-3 bg-black text-white rounded-lg font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-800 transition-colors"
+        className="w-full py-3 bg-black text-white rounded-xl font-medium disabled:opacity-50 disabled:cursor-not-allowed hover:bg-zinc-800 transition-colors"
         onClick={handlePlay}
         disabled={!selectedGuess || isPlaying}
       >
         {isPlaying ? 'Flipping...' : 'Flip! (0.1 BAN)'}
       </button>
       {error && (
-        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-lg">
+        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl">
           {error}
         </div>
       )}
       {result && (
-        <div className={`mt-4 p-4 rounded-lg ${result.won ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
+        <div className={`mt-4 p-4 rounded-xl ${result.won ? 'bg-green-50 text-green-700' : 'bg-red-50 text-red-700'}`}>
           <p className="font-medium">
             {result.won
               ? '🎉 You won! 2x your bet has been sent to your wallet.'
