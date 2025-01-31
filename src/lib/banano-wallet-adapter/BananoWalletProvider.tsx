@@ -1,6 +1,9 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as banani from 'banani';
 import * as bip39 from 'bip39';
+import * as React from 'react';
+import { SeedManager } from '@/lib/banano-wallet-adapter/SeedManager';  
+import { EncryptedStorage } from '@/lib/banano-wallet-adapter/SecureStorage';
 
 // Initialize RPC
 const rpc = new banani.RPC('https://kaliumapi.appditto.com/api');
@@ -18,6 +21,7 @@ interface WalletContextType {
   pendingBalance: string;
   isConnected: boolean;
   isConnecting: boolean;
+  isLoadingBalance: boolean;
   connect: (seedOrPrivateKey?: string) => Promise<void>;
   disconnect: () => void;
   generateNewWallet: () => Promise<{ mnemonic: string; address: string }>;
@@ -67,33 +71,141 @@ export function BananoWalletProvider({
   children,
   rpcUrl = 'https://kaliumapi.appditto.com/api'
 }: WalletProviderProps) {
+  const seedManager = React.useMemo(() => new SeedManager(), []);
   const [wallet, setWallet] = useState<banani.Wallet | null>(null);
   const [address, setAddress] = useState<string | null>(null);
   const [balance, setBalance] = useState('0.00');
   const [pendingBalance, setPendingBalance] = useState('0.00');
   const [isConnected, setIsConnected] = useState(false);
   const [isConnecting, setIsConnecting] = useState(false);
+  const [isLoadingBalance, setIsLoadingBalance] = useState(false);
   const [mnemonic, setMnemonic] = useState('');
   const [seed, setSeed] = useState<string | null>(null);
 
+  const connect = async (seedOrPrivateKey?: string): Promise<void> => {
+    try {
+      setIsConnecting(true);
+
+      let finalSeed: string;
+      if (seedOrPrivateKey) {
+        if (seedOrPrivateKey.length === 64) {
+          finalSeed = seedOrPrivateKey;
+        } else {
+          // Convert mnemonic to seed
+          finalSeed = bip39.mnemonicToEntropy(seedOrPrivateKey).padEnd(64, '0');
+        }
+      } else {
+        const { seed: generatedSeed } = banani.Wallet.gen_random_wallet(rpc);
+        finalSeed = generatedSeed;
+      }
+
+      // Store the seed securely
+      const seedRef = await seedManager.storeSeed(finalSeed);
+      localStorage.setItem('bananoWalletSeedRef', seedRef);
+
+      const newWallet = new banani.Wallet(rpc, finalSeed);
+      setWallet(newWallet);
+      setAddress(newWallet.address);
+      setSeed(finalSeed);
+      setIsConnected(true);
+
+      // Initial balance update will happen via the useEffect
+    } catch (error) {
+      throw formatError(error);
+    } finally {
+      setIsConnecting(false);
+    }
+  };
+
   // Update RPC URL if changed
   useEffect(() => {
-    // Since we can't modify the RPC instance directly, create a new wallet with the new RPC
-    if (wallet && seed) {
+    if (wallet) {
       const newRpc = new banani.RPC(rpcUrl);
-      const newWallet = new banani.Wallet(newRpc, seed);
+      const newWallet = new banani.Wallet(newRpc, wallet.seed);
       setWallet(newWallet);
     }
-  }, [rpcUrl, seed]);
+  }, [rpcUrl]);
 
-  // Add localStorage persistence
   useEffect(() => {
-    // Try to reconnect on mount if there's a stored seed
-    const storedSeed = localStorage.getItem('bananoWalletSeed');
-    if (storedSeed && !isConnected && !isConnecting) {
-      connect(storedSeed).catch(console.error);
+    const reconnectWallet = async () => {
+      const seedRef = localStorage.getItem('bananoWalletSeedRef');
+      if (seedRef && !isConnected && !isConnecting) {
+        try {
+          const retrievedSeed = await seedManager.retrieveSeed(seedRef);
+          if (retrievedSeed) {
+            await connect(retrievedSeed);
+          }
+        } catch (error) {
+          console.error('Failed to reconnect wallet:', error);
+          localStorage.removeItem('bananoWalletSeedRef');
+        }
+      }
+    };
+
+    // Initialize seedManager and attempt to reconnect
+    seedManager.initialize().then(() => {
+      reconnectWallet();
+    }).catch(console.error);
+  }, [seedManager, connect, isConnected, isConnecting]);
+
+  useEffect(() => {
+    if (!isConnected || !address) return;
+
+    let mounted = true;
+    let timeoutId: NodeJS.Timeout;
+
+    const updateBalance = async () => {
+      if (!mounted) return;
+      try {
+        setIsLoadingBalance(true);
+        const hasPending = await checkPendingTransactions();
+        if (hasPending && wallet) {
+          try {
+            await wallet.receive_all();
+            const newBalance = await getBalance(address);
+            setBalance(newBalance);
+          } catch (err: unknown) {
+            // Ignore unreceivable errors
+            if (err instanceof Error && !err.message.includes('Unreceivable')) {
+              console.error('Error receiving pending transactions:', err);
+            }
+          }
+        }
+      } catch (error) {
+        console.error('Error updating balance:', error);
+      } finally {
+        if (mounted) {
+          setIsLoadingBalance(false);
+          timeoutId = setTimeout(updateBalance, 10000);
+        }
+      }
+    };
+
+    // Start the update cycle
+    updateBalance();
+
+    // Cleanup
+    return () => {
+      mounted = false;
+      clearTimeout(timeoutId);
+    };
+  }, [isConnected, address]);
+
+  const checkPendingTransactions = async (): Promise<boolean> => {
+    if (!address) return false;
+    try {
+      const accountInfo = await rpc.get_account_info(address as `ban_${string}`, false, false, false, true);
+      console.log('Account info:', accountInfo);
+      // If there are pending transactions, accountInfo.pending will be non-zero
+      return accountInfo && 
+             !('error' in accountInfo) && 
+             accountInfo.pending !== undefined &&
+             BigInt(accountInfo.pending) > BigInt(0);
+    } catch (error) {
+      console.error('Error checking pending transactions:', error);
+      return false;
     }
-  }, []); // Empty deps array means this runs once on mount
+  };
 
   const getBalance = async (address: string) => {
     try {
@@ -104,7 +216,6 @@ export function BananoWalletProvider({
         if (accountInfo?.error === 'Account not found') {
           return '0.00';
         }
-        // For other errors, log them but still return 0
         console.error('Error fetching account info:', accountInfo?.error || 'Unknown error');
         return '0.00';
       }
@@ -113,7 +224,6 @@ export function BananoWalletProvider({
       const balanceWhole = banani.raw_to_whole(balanceRaw);
       return Number(balanceWhole).toFixed(2);
     } catch (error) {
-      // Log the error but don't throw - new accounts are expected to not exist
       console.debug('Balance check failed, assuming new account:', error);
       return '0.00';
     }
@@ -121,101 +231,26 @@ export function BananoWalletProvider({
 
   const getUserBalance = async () => {
     if (!wallet || !isConnected || !address) return;
-
     try {
-      // First receive any pending transactions
-      try {
-        await wallet.receive_all();
-      } catch (err: unknown) {
-        // Ignore unreceivable errors as they're not critical
-        if (err instanceof Error && !err.message.includes('Unreceivable')) {
-          throw err;
-        }
-      }
-
+      setIsLoadingBalance(true);
       const balance = await getBalance(address);
       setBalance(balance);
     } catch (error) {
       console.error('Error updating balance:', error);
-    }
-  };
-
-  const connect = async (seedOrPrivateKey?: string) => {
-    try {
-      setIsConnecting(true);
-
-      // Clear existing wallet state first
-      disconnect();
-
-      let walletSeed: string;
-      if (seedOrPrivateKey) {
-        // Check if it's a mnemonic
-        if (seedOrPrivateKey.includes(' ')) {
-          try {
-            // Convert mnemonic to entropy (hex string)
-            walletSeed = bip39.mnemonicToEntropy(seedOrPrivateKey).toUpperCase();
-          } catch (error) {
-            throw new Error('Invalid mnemonic phrase');
-          }
-        } else {
-          // Treat as hex seed/private key
-          if (!/^[0-9a-fA-F]*$/.test(seedOrPrivateKey)) {
-            throw new Error('Invalid seed format: must be hexadecimal');
-          }
-          walletSeed = seedOrPrivateKey.toUpperCase();
-        }
-        // Ensure 64 characters
-        walletSeed = walletSeed.padStart(64, '0');
-      } else if (seed) {
-        // Use existing seed if available
-        walletSeed = seed;
-      } else {
-        // Generate new wallet if no seed provided or stored
-        const randomWallet = banani.Wallet.gen_random_wallet(rpc);
-        walletSeed = randomWallet.seed.toUpperCase();
-      }
-
-      // Validate final seed
-      if (!/^[0-9A-F]{64}$/.test(walletSeed)) {
-        throw new Error('Invalid seed: must be 64 hexadecimal characters');
-      }
-
-      // Store seed in localStorage
-      localStorage.setItem('bananoWalletSeed', walletSeed);
-
-      // Create wallet instance
-      const newWallet = new banani.Wallet(rpc, walletSeed);
-      
-      // Get initial balance - this won't throw for new accounts
-      const initialBalance = await getBalance(newWallet.address);
-      
-      // Set all state at once
-      setWallet(newWallet);
-      setAddress(newWallet.address);
-      setSeed(walletSeed);
-      setBalance(initialBalance);
-      setIsConnected(true);
-      
-    } catch (error) {
-      const formattedError = formatError(error);
-      console.error('Error connecting wallet:', formattedError);
-      throw formattedError;
     } finally {
-      setIsConnecting(false);
+      setIsLoadingBalance(false);
     }
   };
 
-  const disconnect = () => {
-    // Clear localStorage
-    localStorage.removeItem('bananoWalletSeed');
-    
+  const disconnect = (): void => {
     setWallet(null);
     setAddress(null);
-    setSeed(null);
     setBalance('0.00');
     setPendingBalance('0.00');
     setIsConnected(false);
-    setMnemonic('');
+    setSeed(null);
+    localStorage.removeItem('bananoWalletSeedRef');
+    seedManager.clearMemory();
   };
 
   const generateNewWallet = async () => {
@@ -330,13 +365,6 @@ export function BananoWalletProvider({
     }
   };
 
-  useEffect(() => {
-    if (isConnected) {
-      const interval = setInterval(getUserBalance, 10000);
-      return () => clearInterval(interval);
-    }
-  }, [isConnected, address]);
-
   const value = {
     address,
     balance,
@@ -344,6 +372,7 @@ export function BananoWalletProvider({
     seed,
     isConnected,
     isConnecting,
+    isLoadingBalance,
     connect,
     disconnect,
     generateNewWallet,

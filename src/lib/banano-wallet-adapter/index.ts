@@ -1,1 +1,1 @@
-export { BananoWalletProvider, useWallet } from './context';
+export { BananoWalletProvider, useWallet } from './BananoWalletProvider';

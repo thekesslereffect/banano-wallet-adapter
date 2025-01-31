@@ -35,12 +35,14 @@ banano-wallet-adapter/
 ├── components/              # React components
 │   ├── BananoConnectButton.tsx  # Wallet connect button
 │   └── examples/            # Example components
-│       └── details.tsx      # Wallet details example
+│       ├── details.tsx      # Wallet details example
+│       └── TransactionHistory.tsx # Transaction history component
 ├── lib/                     # Core libraries
 │   └── banano-wallet-adapter/ # Wallet adapter
-│       ├── context.tsx      # Wallet context
-│       ├── index.ts         # Main exports
-│       └── types.ts         # TypeScript types
+│       ├── BananoWalletProvider.tsx # Main wallet provider
+│       ├── SecureStorage.tsx # Secure storage implementation
+│       ├── SeedManager.tsx  # Seed management
+│       └── index.ts         # Main exports
 └── providers/               # App providers
     └── Providers.tsx        # Client-side providers wrapper
 ```
@@ -88,170 +90,87 @@ export default function YourComponent() {
 2. Access wallet context in client components:
 ```tsx
 'use client';
-import { useBananoWallet } from "@/lib/banano-wallet-adapter";
+import { useWallet } from "@/lib/banano-wallet-adapter";
 
 export function WalletInfo() {
-  const { wallet, connected } = useBananoWallet();
+  const { address, balance, isConnected } = useWallet();
   // ... use wallet state
 }
 ```
 
+## 🌟 Features
+
+### Secure Wallet Management
+- Encrypted seed storage
+- Password-based encryption
+- Secure key derivation
+- Automatic wallet reconnection
+
+### Balance Management
+- Real-time balance updates
+- Automatic pending transaction detection
+- Efficient balance refresh mechanism
+- Loading states for better UX
+
+### Transaction Handling
+- Send and receive BANANO
+- Transaction history with live updates
+- Pending transaction detection
+- Error handling and validation
+- Support for both RAW and BANANO units
+
+### User Experience
+- Loading states for all operations
+- Error feedback and handling
+- Automatic balance refresh
+- Transaction history with timestamps
+- Clean and modern UI components
+
+### Security
+- Client-side encryption
+- No seed transmission
+- Secure storage implementation
+- Password-based key derivation
+
 ## 🎨 Customization
 
-### 1. Themes
-The template comes with several pre-built themes:
-- Black (Default)
-- White
-- Blue
-- Yellow
-- Green
+### Styling
+The template uses Tailwind CSS for styling. You can customize the look and feel by:
+1. Modifying `tailwind.config.js`
+2. Editing component classes
+3. Adding your own CSS in `globals.css`
 
-Customize the connect button:
-```tsx
-<BananoConnectButton 
-  theme="black"      // Choose your theme
-  modalTheme="light" // Light or dark modal
-/>
+### Configuration
+You can customize the wallet behavior by modifying:
+1. RPC endpoint in `BananoWalletProvider.tsx`
+2. Auto-refresh intervals for balance and transactions
+3. UI components in the `components` directory
+
+## 📚 API Reference
+
+### useWallet Hook
+```typescript
+const {
+  address,          // Current wallet address
+  balance,          // Current balance in BANANO
+  isConnected,      // Connection status
+  isLoadingBalance, // Balance loading state
+  connect,          // Connect wallet function
+  disconnect,       // Disconnect wallet function
+  sendBanano,       // Send BANANO function
+  getTransactionHistory, // Get transaction history
+} = useWallet();
 ```
 
-### 2. Components
-Each component is designed to be easily customized:
-
-```tsx
-// components/wallet/details.tsx
-export function WalletDetails({ 
-  showQR = true,         // Toggle QR code
-  showHistory = true,    // Toggle transaction history
-  maxHistory = 10        // Number of transactions to show
-}) {
-  // Your customizations here
-}
-```
-
-### 3. Styling
-The template uses Tailwind CSS with custom theme extensions:
-
-```js
-// tailwind.config.js
-module.exports = {
-  theme: {
-    extend: {
-      colors: {
-        primary: {...},
-        secondary: {...}
-      }
-    }
-  }
-}
-```
-
-## 🔒 Security Best Practices
-
-1. **Environment Variables**
-```env
-# .env.local
-NEXT_PUBLIC_RPC_URL=https://kaliumapi.appditto.com/api
-```
-
-2. **Wallet Security**
-- Seeds and private keys are never stored
-- All operations are client-side
-- Uses [Banani](https://github.com/stjet/banani) for core operations
-
-## 📦 Core Features
-
-- ✅ Wallet Connection
-  - Create new wallet
-  - Import from seed/mnemonic
-  - Auto-disconnect protection
-- ✅ Transactions
-  - Send BANANO
-  - Receive pending
-  - Transaction history
-- ✅ UI Components
-  - Connect button
-  - Wallet details
-  - QR code generation
-- ✅ Developer Experience
-  - TypeScript support
-  - Detailed error handling
-  - Comprehensive hooks
-
-## 🎮 Example Components
-
-The template includes several example components to demonstrate common wallet functionality:
-
-### 1. Balance Display
-```tsx
-import { Balance } from "@/components/examples/Balance";
-```
-- Shows current wallet balance
-- Auto-updates when transactions occur
-- Clean, minimal UI design
-
-### 2. BANANO QR Code
-```tsx
-import { BananoQR } from "@/components/examples/BananoQR";
-```
-- Generates QR code for wallet address
-- One-click address copying
-- Perfect for receiving payments
-
-### 3. Send BANANO Form
-```tsx
-import { SendBananoForm } from "@/components/examples/Send";
-```
-- User-friendly send interface
-- Address and amount validation
-- Transaction status feedback
-- Error handling
-
-### 4. Transaction History
-```tsx
-import { TransactionHistory } from "@/components/examples/TransactionHistory";
-```
-- Lists recent transactions
-- Shows send/receive operations
-- Includes transaction amounts and timestamps
-- Links to block explorer
-
-### 5. Coin Flip Game
-```tsx
-import { CoinFlip } from "@/components/examples/CoinFlip";
-```
-- Interactive betting game
-- Bet 0.1 BAN on heads or tails
-- Server-side randomization
-- Configurable house edge (default 4%)
-- Automatic payout for winners (2x bet)
-- Requires game wallet setup (see env.local.example)
-
-## 🛠 Development Tools
-
-```bash
-# Run development server
-npm run dev
-
-# Build for production
-npm run build
-
-# Run tests
-npm test
-
-# Type checking
-npm run typecheck
-```
-
-## 📚 Resources
-
-- [Next.js Documentation](https://nextjs.org/docs)
-- [Banani Documentation](https://banani.prussia.dev/)
-- [Tailwind CSS](https://tailwindcss.com/docs)
+### Components
+1. `BananoConnectButton`: Main wallet connection button
+2. `TransactionHistory`: Transaction history display
+3. `WalletDetails`: Wallet information display
 
 ## 🤝 Contributing
 
-Feel free to contribute! Open an issue or pull request if you have a bug or want to add a feature.
+Contributions are welcome! Please feel free to submit a Pull Request.
 
 ## 📄 License
 
-MIT License - feel free to use this in your projects!
+This project is licensed under the MIT License - see the LICENSE file for details.
