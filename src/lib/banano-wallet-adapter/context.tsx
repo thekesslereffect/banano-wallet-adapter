@@ -31,6 +31,8 @@ interface WalletContextType {
     hash: string;
     timestamp: number;
   }>>;
+  updateBalances: () => Promise<void>;
+  getBalance: (address: string) => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -322,6 +324,8 @@ export function BananoWalletProvider({
     sendBanano,
     receivePending,
     getTransactionHistory,
+    updateBalances,
+    getBalance
   };
 
   return (

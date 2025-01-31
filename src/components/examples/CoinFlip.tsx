@@ -4,7 +4,7 @@ import { useWallet } from '@/lib/banano-wallet-adapter';
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { address, isConnected, sendBanano, receivePending } = useWallet();
+  const { address, isConnected, sendBanano, receivePending, getBalance } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{
@@ -13,6 +13,11 @@ export function CoinFlip() {
     hash?: string;
   } | null>(null);
   const [error, setError] = useState<string | null>(null);
+  const [gameBalance, setGameBalance] = useState('0.00');
+
+  getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
+    setGameBalance(balance);
+  });
 
   const handlePlay = async () => {
     if (!isConnected || !address || !selectedGuess || isPlaying) return;
@@ -56,6 +61,9 @@ export function CoinFlip() {
       });
 
       await receivePending();
+      await getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
+        setGameBalance(balance);
+      });
 
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to play game');
@@ -74,7 +82,9 @@ export function CoinFlip() {
     <div>
       <h2 className="text-2xl font-bold mb-4">Banano Coin Flip</h2>
       
+      
       <div className="mb-6">
+      <p className="text-sm text-gray-600 mb-2">Game balance: {gameBalance} BAN</p>
         <p className="text-sm text-gray-600 mb-2">Bet 0.1 BAN and guess the coin flip. Win 2x your bet!</p>
         <div className="flex gap-4">
           <button
