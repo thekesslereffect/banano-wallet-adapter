@@ -1,9 +1,10 @@
-// src/components/BananoConnectButton.tsx
-
 'use client';
 
 import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
+
+type ThemeName = 'black' | 'white' | 'blue' | 'yellow' | 'green';
+type ModalThemeName = 'light' | 'dark';
 
 interface ButtonTheme {
   backgroundColor: string;
@@ -23,10 +24,7 @@ interface ModalTheme {
   secondaryButton: string;
 }
 
-type ThemeName = 'black' | 'white' | 'blue' | 'yellow' | 'green';
-type ModalThemeName = 'light' | 'dark';
-
-const themes: Record<ThemeName, ButtonTheme> = {
+const buttonThemes: Record<ThemeName, ButtonTheme> = {
   black: {
     backgroundColor: 'bg-gradient-to-b from-zinc-800 to-black',
     textColor: 'text-white',
@@ -98,8 +96,7 @@ export function BananoConnectButton({
   const [mnemonic, setMnemonic] = useState('');
   const [error, setError] = useState('');
 
-  const selectedTheme = theme in themes ? theme : 'black';
-  const buttonTheme = themes[selectedTheme];
+  const buttonTheme = buttonThemes[theme] || buttonThemes.black;
   const selectedModalTheme = modalThemes[modalTheme];
 
   const baseClasses = [
@@ -121,7 +118,7 @@ export function BananoConnectButton({
     'hover:shadow-xl',
     'active:scale-95',
     className,
-  ].filter(Boolean).join(' ');
+  ].join(' ');
 
   const handleConnect = async () => {
     try {
@@ -129,7 +126,7 @@ export function BananoConnectButton({
       await connect(mnemonic);
       setShowModal(false);
       setMnemonic('');
-    } catch (error) {
+    } catch (e) {
       setError('Invalid mnemonic phrase');
     }
   };
@@ -139,7 +136,7 @@ export function BananoConnectButton({
       setError('');
       const { mnemonic: newMnemonic } = await generateNewWallet();
       setMnemonic(newMnemonic);
-    } catch (error) {
+    } catch (e) {
       setError('Error generating new wallet');
     }
   };
@@ -155,81 +152,72 @@ export function BananoConnectButton({
     if (!seed) return;
     try {
       await navigator.clipboard.writeText(seed);
-    } catch (error) {
-      console.error('Failed to copy seed:', error);
+    } catch (e) {
+      console.error('Failed to copy seed:', e);
     }
   };
 
-  const truncateAddress = (addr: string) => {
-    return `${addr.slice(0, 9)}...${addr.slice(-4)}`;
-  };
+  const truncateAddress = (addr: string) => `${addr.slice(0, 9)}...${addr.slice(-4)}`;
 
   if (isConnected && address) {
     return (
       <div className="relative inline-block">
-        <button
-          className={baseClasses}
-          onClick={() => setShowModal(true)}
-        >
+        <button className={baseClasses} onClick={() => setShowModal(true)}>
           <span>{truncateAddress(address)}</span>
           <span>({balance || '0.00'} BAN)</span>
         </button>
-
         {showModal && (
           <div className="fixed inset-0 z-50 overflow-y-auto">
-            <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-            
+            <div
+              className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+              onClick={() => setShowModal(false)}
+            />
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className={`relative w-full max-w-md transform overflow-hidden rounded-3xl ${selectedModalTheme.backgroundColor} p-6 text-left shadow-xl transition-all`}>
-                <div className="absolute right-4 top-4">
-                  <button
-                    onClick={() => setShowModal(false)}
-                    className="text-zinc-400 hover:text-zinc-500"
-                  >
-                    <span className="sr-only">Close</span>
-                    <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                    </svg>
-                  </button>
-                </div>
-
-                <div className="mt-2">
-                  <h3 className={`text-lg font-medium leading-6 ${selectedModalTheme.textColor} mb-4`}>
-                    Wallet Details
-                  </h3>
-                  <div className="space-y-4">
-                    <div>
-                      <label className={`block text-sm font-medium ${selectedModalTheme.labelColor} mb-2`}>
-                        Address
-                      </label>
-                      <div className={`mt-1 text-sm ${selectedModalTheme.textColor} break-all font-mono`}>
-                        {address}
-                      </div>
+              <div
+                className={`relative w-full max-w-md rounded-3xl p-6 shadow-xl transition-all ${selectedModalTheme.backgroundColor}`}
+              >
+                <button
+                  className="absolute right-4 top-4 text-zinc-400 hover:text-zinc-500"
+                  onClick={() => setShowModal(false)}
+                >
+                  <span className="sr-only">Close</span>
+                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
+                <h3 className={`text-lg font-medium mb-4 ${selectedModalTheme.textColor}`}>
+                  Wallet Details
+                </h3>
+                <div className="space-y-4">
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${selectedModalTheme.labelColor}`}>
+                      Address
+                    </label>
+                    <div className={`mt-1 text-sm font-mono break-all ${selectedModalTheme.textColor}`}>
+                      {address}
                     </div>
-
-                    <div>
-                      <label className={`block text-sm font-medium ${selectedModalTheme.labelColor} mb-2`}>
-                        Balance
-                      </label>
-                      <div className={`mt-1 text-2xl font-semibold ${selectedModalTheme.textColor}`}>
-                        {balance || '0.00'} BAN
-                      </div>
+                  </div>
+                  <div>
+                    <label className={`block text-sm font-medium mb-2 ${selectedModalTheme.labelColor}`}>
+                      Balance
+                    </label>
+                    <div className={`mt-1 text-2xl font-semibold ${selectedModalTheme.textColor}`}>
+                      {balance || '0.00'} BAN
                     </div>
-
-                    <div className="flex gap-3 mt-6">
-                      <button
-                        onClick={handleCopySeed}
-                        className={`flex-1 rounded-2xl ${selectedModalTheme.secondaryButton} px-4 py-3 text-sm font-medium
-                          transition-colors`}
-                      >
-                        Copy Seed
-                      </button>
-                      <button
-                        onClick={handleDisconnect}
-                        className={`flex-1 rounded-2xl ${selectedModalTheme.primaryButton} px-4 py-3 text-sm font-medium transition-colors`}>
-                        Disconnect
-                      </button>
-                    </div>
+                  </div>
+                  <div className="flex gap-3 mt-6">
+                    <button
+                      onClick={handleCopySeed}
+                      className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.secondaryButton}`}
+                    >
+                      Copy Seed
+                    </button>
+                    <button
+                      onClick={handleDisconnect}
+                      className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.primaryButton}`}
+                    >
+                      Disconnect
+                    </button>
                   </div>
                 </div>
               </div>
@@ -242,95 +230,85 @@ export function BananoConnectButton({
 
   return (
     <div>
-      <button
-        className={baseClasses}
-        onClick={() => setShowModal(true)}
-        disabled={isConnecting}
-      >
+      <button className={baseClasses} onClick={() => setShowModal(true)} disabled={isConnecting}>
         {isConnecting ? (
           <div className="flex items-center">
             <svg className="animate-spin -ml-1 mr-2 h-4 w-4" fill="none" viewBox="0 0 24 24">
               <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-              <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z" />
+              <path
+                className="opacity-75"
+                fill="currentColor"
+                d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"
+              />
             </svg>
             Connecting...
           </div>
         ) : (
-          <div>Connect Wallet</div>
+          'Connect Wallet'
         )}
       </button>
-
       {showModal && (
         <div className="fixed inset-0 z-50 overflow-y-auto">
-          <div className="fixed inset-0 bg-black/30 backdrop-blur-sm" onClick={() => setShowModal(false)} />
-          
+          <div
+            className="fixed inset-0 bg-black/30 backdrop-blur-sm"
+            onClick={() => setShowModal(false)}
+          />
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className={`relative w-full max-w-md transform overflow-hidden rounded-3xl ${selectedModalTheme.backgroundColor} ${selectedModalTheme.borderColor} border p-6 text-left shadow-xl transition-all`}>
-              <div className="absolute right-4 top-4">
-                <button
-                  onClick={() => setShowModal(false)}
-                  className="text-zinc-400 hover:text-zinc-500"
-                >
-                  <span className="sr-only">Close</span>
-                  <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
-                    <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
-                  </svg>
-                </button>
-              </div>
-
-              <div className="mt-2">
-                <h3 className={`text-lg font-medium leading-6 ${selectedModalTheme.textColor} mb-4`}>
-                  Connect to Wallet
-                </h3>
-                <div className="space-y-4">
-                  <div>
-                    <label className={`block text-sm font-medium ${selectedModalTheme.labelColor} mb-2`}>
-                      Enter Seed or Private Key
-                    </label>
-                    <div className="relative">
-                      <input
-                        type={'password'}
-                        value={mnemonic}
-                        onChange={(e) => setMnemonic(e.target.value)}
-                        placeholder="Enter seed or private key"
-                        className={`block w-full rounded-xl ${selectedModalTheme.inputBackground} ${selectedModalTheme.textColor} 
-                          ${selectedModalTheme.placeholderColor} ${selectedModalTheme.borderColor} border px-4 py-3 pr-12
-                          focus:outline-none focus:ring-2 focus:ring-blue-500`}
-                      />
+            <div
+              className={`relative w-full max-w-md rounded-3xl p-6 border shadow-xl transition-all ${selectedModalTheme.backgroundColor} ${selectedModalTheme.borderColor}`}
+            >
+              <button
+                className="absolute right-4 top-4 text-zinc-400 hover:text-zinc-500"
+                onClick={() => setShowModal(false)}
+              >
+                <span className="sr-only">Close</span>
+                <svg className="h-6 w-6" fill="none" viewBox="0 0 24 24" strokeWidth="1.5" stroke="currentColor">
+                  <path strokeLinecap="round" strokeLinejoin="round" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+              </button>
+              <h3 className={`text-lg font-medium mb-4 ${selectedModalTheme.textColor}`}>
+                Connect to Wallet
+              </h3>
+              <div className="space-y-4">
+                <label className={`block text-sm font-medium mb-2 ${selectedModalTheme.labelColor}`}>
+                  Enter Seed or Private Key
+                </label>
+                <input
+                  type="password"
+                  value={mnemonic}
+                  onChange={(e) => setMnemonic(e.target.value)}
+                  placeholder="Enter seed or private key"
+                  className={`w-full rounded-xl px-4 py-3 border ${selectedModalTheme.inputBackground} ${selectedModalTheme.textColor} ${selectedModalTheme.placeholderColor} ${selectedModalTheme.borderColor} focus:outline-none focus:ring-2 focus:ring-blue-500`}
+                />
+                <p className={`text-sm opacity-75 ${selectedModalTheme.labelColor}`}>
+                  Enter a mnemonic phrase or a 64-character private key.
+                </p>
+                {error && (
+                  <div className="p-4 text-sm text-red-500 bg-red-50 rounded-xl">
+                    {error}
                   </div>
-                  <p className={`mt-2 text-sm ${selectedModalTheme.labelColor} opacity-75`}>
-                    You can enter either a seed of any length or a private key (64 hex characters)
-                  </p>
-                  {error && (
-                    <div className="p-4 text-sm text-red-500 bg-red-50 rounded-xl">
-                      {error}
-                    </div>
-                  )}
-                  <div className="flex gap-3 mt-6">
+                )}
+                <div className="flex gap-3 mt-6">
                   <button
-                      onClick={handleGenerateNew}
-                      className={`flex-1 rounded-2xl ${selectedModalTheme.secondaryButton} px-4 py-3 text-sm font-medium
-                        transition-colors`}
-                      disabled={isConnecting}
-                    >
-                      Generate New
-                    </button>
-                    <button
-                      onClick={handleConnect}
-                      className={`flex-1 rounded-2xl ${selectedModalTheme.primaryButton} px-4 py-3 text-sm font-medium
-                        transition-colors hover:cursor-pointer`}
-                      disabled={isConnecting || !mnemonic}
-                    >
-                      {isConnecting ? 'Connecting...' : 'Connect'}
-                    </button>
-                  </div>
+                    onClick={handleGenerateNew}
+                    className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.secondaryButton}`}
+                    disabled={isConnecting}
+                  >
+                    Generate New
+                  </button>
+                  <button
+                    onClick={handleConnect}
+                    className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.primaryButton}`}
+                    disabled={isConnecting || !mnemonic}
+                  >
+                    {isConnecting ? 'Connecting...' : 'Connect'}
+                  </button>
                 </div>
               </div>
             </div>
           </div>
         </div>
-       </div>
-      )}    
+      )}
     </div>
   );
 }
