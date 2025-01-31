@@ -12,7 +12,7 @@ interface Transaction {
 }
 
 export function TransactionHistory() {
-  const { isConnected, getTransactionHistory } = useWallet();
+  const { address,isConnected, getTransactionHistory } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -20,7 +20,7 @@ export function TransactionHistory() {
   useEffect(() => {
     if (isConnected) {
       setIsLoading(true);
-      getTransactionHistory()
+      getTransactionHistory(address as `ban_${string}`)
         .then(setTransactions)
         .catch(console.error)
         .finally(() => setIsLoading(false));

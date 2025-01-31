@@ -24,15 +24,15 @@ interface WalletContextType {
   mnemonic: string;
   sendBanano: (toAddress: string, amount: string) => Promise<string>;
   receivePending: () => Promise<string[]>;
-  getTransactionHistory: () => Promise<Array<{
+  getTransactionHistory: (_address: string) => Promise<Array<{
     type: 'send' | 'receive';
     account: string;
     amount: string;
     hash: string;
     timestamp: number;
   }>>;
-  updateBalances: () => Promise<void>;
-  getBalance: (address: string) => Promise<string>;
+  updateUserBalance: () => Promise<void>;
+  getBalance: (_address: string) => Promise<string>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -109,7 +109,7 @@ export function BananoWalletProvider({
     }
   };
 
-  const updateBalances = async () => {
+  const updateUserBalance = async () => {
     if (!wallet || !isConnected || !address) return;
 
     try {
@@ -243,17 +243,17 @@ export function BananoWalletProvider({
     }
   };
 
-  const sendBanano = async (toAddress: string, amount: string) => {
+  const sendBanano = async (_toAddress: string, amount: string) => {
     if (!wallet || !address) {
       throw new Error('Wallet not connected');
     }
     try {
-      if (!toAddress.startsWith('ban_') || toAddress.length !== 64) {
+      if (!_toAddress.startsWith('ban_') || _toAddress.length !== 64) {
         throw new Error('Invalid Banano address format');
       }
       const numericAmount = Number(amount).toString();
-      const hash = await wallet.send(toAddress as `ban_${string}`, numericAmount as `${number}`);
-      await updateBalances();
+      const hash = await wallet.send(_toAddress as `ban_${string}`, numericAmount as `${number}`);
+      await updateUserBalance();
       return hash;
     } catch (error) {
       const formattedError = formatError(error);
@@ -269,7 +269,7 @@ export function BananoWalletProvider({
 
     try {
       const hashes = await wallet.receive_all();
-      await updateBalances();
+      await updateUserBalance();
       return hashes || [];
     } catch (error) {
       const formattedError = formatError(error);
@@ -278,13 +278,10 @@ export function BananoWalletProvider({
     }
   };
 
-  const getTransactionHistory = async () => {
-    if (!wallet || !address) {
-      throw new Error('Wallet not connected');
-    }
+  const getTransactionHistory = async (_address: string) => {
 
     try {
-      const history = await rpc.get_account_history(address as `ban_${string}`, 10);
+      const history = await rpc.get_account_history(_address as `ban_${string}`, 10);
       if (!history || !history.history) {
         return [];
       }
@@ -305,7 +302,7 @@ export function BananoWalletProvider({
 
   useEffect(() => {
     if (isConnected) {
-      const interval = setInterval(updateBalances, 10000);
+      const interval = setInterval(updateUserBalance, 10000);
       return () => clearInterval(interval);
     }
   }, [isConnected, address]);
@@ -324,7 +321,7 @@ export function BananoWalletProvider({
     sendBanano,
     receivePending,
     getTransactionHistory,
-    updateBalances,
+    updateUserBalance,
     getBalance
   };
 
