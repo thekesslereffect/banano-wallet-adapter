@@ -86,6 +86,15 @@ export function BananoWalletProvider({
     }
   }, [rpcUrl, seed]);
 
+  // Add localStorage persistence
+  useEffect(() => {
+    // Try to reconnect on mount if there's a stored seed
+    const storedSeed = localStorage.getItem('bananoWalletSeed');
+    if (storedSeed && !isConnected && !isConnecting) {
+      connect(storedSeed).catch(console.error);
+    }
+  }, []); // Empty deps array means this runs once on mount
+
   const getBalance = async (address: string) => {
     try {
       const accountInfo = await rpc.get_account_info(address as `ban_${string}`);
@@ -171,12 +180,14 @@ export function BananoWalletProvider({
         throw new Error('Invalid seed: must be 64 hexadecimal characters');
       }
 
+      // Store seed in localStorage
+      localStorage.setItem('bananoWalletSeed', walletSeed);
+
       // Create wallet instance
       const newWallet = new banani.Wallet(rpc, walletSeed);
       
       // Get initial balance - this won't throw for new accounts
       const initialBalance = await getBalance(newWallet.address);
-
       
       // Set all state at once
       setWallet(newWallet);
@@ -184,7 +195,6 @@ export function BananoWalletProvider({
       setSeed(walletSeed);
       setBalance(initialBalance);
       setIsConnected(true);
-      
       
     } catch (error) {
       const formattedError = formatError(error);
@@ -196,6 +206,9 @@ export function BananoWalletProvider({
   };
 
   const disconnect = () => {
+    // Clear localStorage
+    localStorage.removeItem('bananoWalletSeed');
+    
     setWallet(null);
     setAddress(null);
     setSeed(null);
