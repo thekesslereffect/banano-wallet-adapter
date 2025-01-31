@@ -1,3 +1,5 @@
+// src/components/examples/CoinFlip.tsx
+
 import { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 

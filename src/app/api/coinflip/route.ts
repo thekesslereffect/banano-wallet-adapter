@@ -1,3 +1,5 @@
+// src/app/api/coinflip/route.ts
+
 import { NextResponse } from 'next/server';
 import * as banani from 'banani';
 

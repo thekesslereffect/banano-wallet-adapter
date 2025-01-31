@@ -1,3 +1,5 @@
+// src/components/examples/BananoQR.tsx
+
 'use client';
 
 import { useEffect, useState } from 'react';

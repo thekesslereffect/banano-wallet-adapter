@@ -1,3 +1,5 @@
+// src/lib/banano-wallet-adapter/BananoWalletProvider.tsx
+
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import * as banani from 'banani';
 import * as bip39 from 'bip39';

@@ -1,3 +1,5 @@
+// src/lib/banano-wallet-adapter/SecureStorage.tsx
+
 export class EncryptedStorage {
     private encoder: TextEncoder;
     private decoder: TextDecoder;

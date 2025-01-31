@@ -1,3 +1,5 @@
+// src/lib/banano-wallet-adapter/SeedManager.tsx
+
 import { EncryptedStorage } from '@/lib/banano-wallet-adapter/SecureStorage';
 
 interface PersistedData {

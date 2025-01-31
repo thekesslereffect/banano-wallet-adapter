@@ -1,3 +1,5 @@
+// src/components/examples/Balance.tsx
+
 'use client';
 
 import React, { useEffect, useState } from 'react';

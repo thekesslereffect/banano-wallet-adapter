@@ -1,3 +1,4 @@
+// src/providers/Providers.tsx
 'use client';
 
 import { BananoWalletProvider } from "@/lib/banano-wallet-adapter";

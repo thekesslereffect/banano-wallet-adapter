@@ -28,23 +28,34 @@ npm run dev
 
 ```
 banano-wallet-adapter/
-├── app/                      # Next.js app directory
-│   ├── layout.tsx           # Root layout component
-│   ├── page.tsx             # Landing page
-│   └── globals.css          # Global styles
-├── components/              # React components
-│   ├── BananoConnectButton.tsx  # Wallet connect button
-│   └── examples/            # Example components
-│       ├── details.tsx      # Wallet details example
-│       └── TransactionHistory.tsx # Transaction history component
-├── lib/                     # Core libraries
-│   └── banano-wallet-adapter/ # Wallet adapter
-│       ├── BananoWalletProvider.tsx # Main wallet provider
-│       ├── SecureStorage.tsx # Secure storage implementation
-│       ├── SeedManager.tsx  # Seed management
-│       └── index.ts         # Main exports
-└── providers/               # App providers
-    └── Providers.tsx        # Client-side providers wrapper
+├── public/                    # Static files
+│   └── docs/                 # Documentation assets
+├── src/
+│   ├── app/                  # Next.js app directory
+│   │   ├── api/             # API routes
+│   │   │   └── coinflip/    # Coinflip game API endpoint
+│   │   ├── globals.css      # Global styles
+│   │   ├── layout.tsx       # Root layout
+│   │   └── page.tsx         # Home page
+│   ├── components/          # React components
+│   │   ├── examples/        # Example implementations
+│   │   │   ├── Balance.tsx         # Balance display
+│   │   │   ├── BananoQR.tsx        # QR code generator
+│   │   │   ├── CoinFlip.tsx        # Coin flip game
+│   │   │   ├── Send.tsx            # Send BANANO form
+│   │   │   └── TransactionHistory.tsx  # Transaction list
+│   │   └── BananoConnectButton.tsx # Wallet connection UI
+│   ├── lib/                 # Core library code
+│   │   └── banano-wallet-adapter/  # Main wallet implementation
+│   │       ├── BananoWalletProvider.tsx  # Wallet context provider
+│   │       ├── SecureStorage.tsx         # Secure storage implementation
+│   │       ├── SeedManager.tsx           # Seed management
+│   │       └── index.ts                  # Public API exports
+│   └── providers/           # React context providers
+├── next.config.ts           # Next.js configuration
+├── package.json             # Dependencies and scripts
+├── tailwind.config.ts       # Tailwind CSS configuration
+└── tsconfig.json           # TypeScript configuration
 ```
 
 ## 🔧 Implementation
@@ -136,7 +147,7 @@ export function WalletInfo() {
 
 ### Styling
 The template uses Tailwind CSS for styling. You can customize the look and feel by:
-1. Modifying `tailwind.config.js`
+1. Modifying `tailwind.config.ts`
 2. Editing component classes
 3. Adding your own CSS in `globals.css`
 

@@ -1,3 +1,5 @@
+// src/components/BananoConnectButton.tsx
+
 'use client';
 
 import React, { useState } from 'react';

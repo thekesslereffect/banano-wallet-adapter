@@ -1,3 +1,5 @@
+// src/app/page.tsx
+
 'use client';
 
 import { BananoConnectButton } from '@/components/BananoConnectButton';
