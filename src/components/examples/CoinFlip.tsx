@@ -4,7 +4,7 @@ import { useWallet } from '@/lib/banano-wallet-adapter';
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { address, isConnected, sendBanano,  getBalance } = useWallet();
+  const { address, isConnected, sendBanano, getBalance, getUserBalance } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{
@@ -61,7 +61,8 @@ export function CoinFlip() {
         result: data.result,
         hash: data.hash,
       });
-
+      
+      await getUserBalance();
       await getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
         setGameBalance(balance);
       });
