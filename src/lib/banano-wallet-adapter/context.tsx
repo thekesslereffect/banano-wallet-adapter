@@ -23,7 +23,8 @@ interface WalletContextType {
   generateNewWallet: () => Promise<{ mnemonic: string; address: string }>;
   mnemonic: string;
   sendBanano: (toAddress: string, amount: string) => Promise<string>;
-  receivePending: () => Promise<string[]>;
+  receivePending: (_blockHash: string) => Promise<string>;
+  receiveAllPending: () => Promise<string[]>;
   getTransactionHistory: (_address: string) => Promise<Array<{
     type: 'send' | 'receive';
     account: string;
@@ -262,7 +263,23 @@ export function BananoWalletProvider({
     }
   };
 
-  const receivePending = async () => {
+  const receivePending = async (_blockHash: string) => {
+    if (!wallet || !address) {
+      throw new Error('Wallet not connected');
+    }
+
+    try {
+      const hash = await wallet.receive(_blockHash);
+      await updateUserBalance();
+      return hash || "";
+    } catch (error) {
+      const formattedError = formatError(error);
+      console.error('Error receiving pending transactions:', formattedError);
+      throw formattedError;
+    }
+  };
+
+  const receiveAllPending = async () => {
     if (!wallet || !address) {
       throw new Error('Wallet not connected');
     }
@@ -320,6 +337,7 @@ export function BananoWalletProvider({
     mnemonic,
     sendBanano,
     receivePending,
+    receiveAllPending,
     getTransactionHistory,
     updateUserBalance,
     getBalance

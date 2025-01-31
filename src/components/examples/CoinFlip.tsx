@@ -4,7 +4,7 @@ import { useWallet } from '@/lib/banano-wallet-adapter';
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { address, isConnected, sendBanano, receivePending, getBalance } = useWallet();
+  const { address, isConnected, sendBanano,  getBalance } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{
@@ -15,9 +15,7 @@ export function CoinFlip() {
   const [error, setError] = useState<string | null>(null);
   const [gameBalance, setGameBalance] = useState('0.00');
 
-  getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
-    setGameBalance(balance);
-  });
+  
 
   const handlePlay = async () => {
     if (!isConnected || !address || !selectedGuess || isPlaying) return;
@@ -25,6 +23,10 @@ export function CoinFlip() {
     setIsPlaying(true);
     setError(null);
     setResult(null);
+
+    await getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
+      setGameBalance(balance);
+    });
 
     try {
       // First send 0.1 BANANO to the game wallet
@@ -60,7 +62,6 @@ export function CoinFlip() {
         hash: data.hash,
       });
 
-      await receivePending();
       await getBalance(process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS as `ban_${string}`).then((balance) => {
         setGameBalance(balance);
       });
