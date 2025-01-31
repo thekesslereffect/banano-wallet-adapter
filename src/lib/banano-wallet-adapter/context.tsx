@@ -32,7 +32,7 @@ interface WalletContextType {
     hash: string;
     timestamp: number;
   }>>;
-  updateUserBalance: () => Promise<void>;
+  getUserBalance: () => Promise<void>;
   getBalance: (_address: string) => Promise<string>;
 }
 
@@ -110,7 +110,7 @@ export function BananoWalletProvider({
     }
   };
 
-  const updateUserBalance = async () => {
+  const getUserBalance = async () => {
     if (!wallet || !isConnected || !address) return;
 
     try {
@@ -254,7 +254,7 @@ export function BananoWalletProvider({
       }
       const numericAmount = Number(amount).toString();
       const hash = await wallet.send(_toAddress as `ban_${string}`, numericAmount as `${number}`);
-      await updateUserBalance();
+      await getUserBalance();
       return hash;
     } catch (error) {
       const formattedError = formatError(error);
@@ -270,7 +270,7 @@ export function BananoWalletProvider({
 
     try {
       const hash = await wallet.receive(_blockHash);
-      await updateUserBalance();
+      await getUserBalance();
       return hash || "";
     } catch (error) {
       const formattedError = formatError(error);
@@ -286,7 +286,7 @@ export function BananoWalletProvider({
 
     try {
       const hashes = await wallet.receive_all();
-      await updateUserBalance();
+      await getUserBalance();
       return hashes || [];
     } catch (error) {
       const formattedError = formatError(error);
@@ -319,7 +319,7 @@ export function BananoWalletProvider({
 
   useEffect(() => {
     if (isConnected) {
-      const interval = setInterval(updateUserBalance, 10000);
+      const interval = setInterval(getUserBalance, 10000);
       return () => clearInterval(interval);
     }
   }, [isConnected, address]);
@@ -339,7 +339,7 @@ export function BananoWalletProvider({
     receivePending,
     receiveAllPending,
     getTransactionHistory,
-    updateUserBalance,
+    getUserBalance,
     getBalance
   };
 
