@@ -195,7 +195,6 @@ export function BananoWalletProvider({
     if (!address) return false;
     try {
       const accountInfo = await rpc.get_account_info(address as `ban_${string}`, false, false, false, true);
-      console.log('Account info:', accountInfo);
       // If there are pending transactions, accountInfo.pending will be non-zero
       return accountInfo && 
              !('error' in accountInfo) && 
