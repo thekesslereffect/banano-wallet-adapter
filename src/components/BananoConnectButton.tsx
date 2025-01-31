@@ -224,7 +224,7 @@ export function BananoConnectButton({
                       </button>
                       <button
                         onClick={handleDisconnect}
-                        className={`flex-1 rounded-2xl ${selectedModalTheme.primaryButton} px-4 py-3 text-sm font-medium text-white transition-colors`}>
+                        className={`flex-1 rounded-2xl ${selectedModalTheme.primaryButton} px-4 py-3 text-sm font-medium transition-colors`}>
                         Disconnect
                       </button>
                     </div>

@@ -198,15 +198,17 @@ export function BananoWalletProvider({
 
   const checkPendingTransactions = async (): Promise<boolean> => {
     if (!address) return false;
+    
+    // For new accounts or accounts without any transactions,
+    // assume no pending transactions to avoid RPC errors
     try {
-      const accountInfo = await rpc.get_account_info(address as `ban_${string}`, false, false, false, true);
-      // If there are pending transactions, accountInfo.pending will be non-zero
-      return accountInfo && 
-             !('error' in accountInfo) && 
-             accountInfo.pending !== undefined &&
-             BigInt(accountInfo.pending) > BigInt(0);
+      const response = await rpc.get_account_info(address as `ban_${string}`, false, false, false, true);
+      if (!response || 'error' in response) {
+        return false;
+      }
+      return response.pending !== undefined && BigInt(response.pending) > BigInt(0);
     } catch (error) {
-      console.error('Error checking pending transactions:', error);
+      // Silently handle RPC errors for new accounts
       return false;
     }
   };
@@ -257,41 +259,22 @@ export function BananoWalletProvider({
     seedManager.clearMemory();
   };
 
-  const generateNewWallet = async () => {
+  const generateNewWallet = async (): Promise<{ mnemonic: string; address: string }> => {
     try {
-      // Clear existing wallet state first
-      disconnect();
+      // Generate mnemonic with 256 bits of entropy (32 bytes = 64 hex chars)
+      const mnemonic = bip39.generateMnemonic(256);
+      const entropyHex = bip39.mnemonicToEntropy(mnemonic).toUpperCase();
+      
+      // Connect using the entropy hex (this will handle persistence)
+      await connect(entropyHex);
 
-      // Generate new mnemonic and convert to entropy (hex string)
-      const newMnemonic = bip39.generateMnemonic(256); // 256 bits = 32 bytes = 64 hex chars
-      const entropyHex = bip39.mnemonicToEntropy(newMnemonic).toUpperCase();
-      
-      // Ensure we have a 64-character hex string
-      if (entropyHex.length !== 64) {
-        throw new Error(`Invalid entropy length: ${entropyHex.length}. Expected 64 characters.`);
-      }
-      
-      // Create wallet with the 64-char hex seed
-      const newWallet = new banani.Wallet(rpc, entropyHex);
-      
-      // Get initial balance - this won't throw for new accounts
-      const initialBalance = await getBalance(newWallet.address);
-      
-      // Store all state at once
-      setSeed(entropyHex);
-      setMnemonic(newMnemonic);
-      setWallet(newWallet);
-      setAddress(newWallet.address);
-      setBalance(initialBalance);
-      setIsConnected(true);
-      
       return {
-        mnemonic: newMnemonic,
-        address: newWallet.address,
+        mnemonic,
+        address: address as string,
       };
     } catch (error) {
       const formattedError = formatError(error);
-      console.error('Error generating wallet:', formattedError);
+      console.error('Error generating new wallet:', formattedError);
       throw formattedError;
     }
   };
