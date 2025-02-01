@@ -9,7 +9,8 @@ import { CoinFlip } from '@/components/examples/CoinFlip';
 import { TipJar } from '@/components/examples/TipJar';
 import { CrashGame } from '@/components/examples/CrashGame';
 import { Faucet } from '@/components/examples/Faucet';
-import { TokenGateExample } from './examples/TokenGateExample';
+import { TokenGateExample } from '@/components/examples/TokenGateExample';
+import { CustomWalletGenerator } from '@/components/examples/CustomWalletGenerator';
 
 const componentsMap: Record<string, ReactNode> = {
   Balance: <Balance />,
@@ -21,6 +22,7 @@ const componentsMap: Record<string, ReactNode> = {
   'Crash Game': <CrashGame />,
   Faucet: <Faucet />,
   'Token Gate': <TokenGateExample />,
+  'Custom Wallet Generator': <CustomWalletGenerator />,
 };
 
 export function ExamplesShowcase() {
