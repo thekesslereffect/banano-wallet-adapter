@@ -33,7 +33,9 @@ banano-wallet-adapter/
 ├── src/
 │   ├── app/                  # Next.js app directory
 │   │   ├── api/             # API routes
-│   │   │   └── coinflip/    # Coinflip game API endpoint
+│   │   │   ├── coinflip/    # Coinflip game API endpoint
+│   │   │   ├── crash/       # Crash game API endpoint
+│   │   │   └── faucet/      # Faucet API endpoint
 │   │   ├── globals.css      # Global styles
 │   │   ├── layout.tsx       # Root layout
 │   │   └── page.tsx         # Home page
@@ -42,9 +44,13 @@ banano-wallet-adapter/
 │   │   │   ├── Balance.tsx         # Balance display
 │   │   │   ├── BananoQR.tsx        # QR code generator
 │   │   │   ├── CoinFlip.tsx        # Coin flip game
+│   │   │   ├── CrashGame.tsx       # Crash game
+│   │   │   ├── Faucet.tsx          # Banano faucet
 │   │   │   ├── Send.tsx            # Send BANANO form
+│   │   │   ├── TipJar.tsx          # Tip jar component
 │   │   │   └── TransactionHistory.tsx  # Transaction list
-│   │   └── BananoConnectButton.tsx # Wallet connection UI
+│   │   ├── BananoConnectButton.tsx # Wallet connection UI
+│   │   └── ExamplesShowcase.tsx    # Interactive component showcase
 │   ├── lib/                 # Core library code
 │   │   └── banano-wallet-adapter/  # Main wallet implementation
 │   │       ├── BananoWalletProvider.tsx  # Wallet context provider
@@ -109,6 +115,24 @@ export function WalletInfo() {
 }
 ```
 
+## 🎮 Example Components
+
+The template includes several example components to demonstrate wallet integration:
+
+### Core Functionality
+- **Balance**: Display wallet balance with auto-refresh
+- **BananoQR**: Generate QR codes for wallet addresses
+- **Send**: Send BANANO to other addresses
+- **TransactionHistory**: View transaction history
+
+### Games and Interactive Features
+- **CoinFlip**: Simple betting game with 50/50 odds
+- **CrashGame**: Multiplayer crash-style betting game
+- **TipJar**: Accept tips from other users
+- **Faucet**: Distribute free BANANO to users
+
+All example components are showcased in an interactive selector interface, making it easy to explore different wallet functionalities.
+
 ## 🌟 Features
 
 ### Secure Wallet Management
@@ -136,6 +160,7 @@ export function WalletInfo() {
 - Automatic balance refresh
 - Transaction history with timestamps
 - Clean and modern UI components
+- Interactive component showcase
 
 ### Security
 - Client-side encryption
@@ -156,6 +181,7 @@ You can customize the wallet behavior by modifying:
 1. RPC endpoint in `BananoWalletProvider.tsx`
 2. Auto-refresh intervals for balance and transactions
 3. UI components in the `components` directory
+4. Game and faucet settings in their respective API routes
 
 ## 📚 API Reference
 
@@ -170,13 +196,14 @@ const {
   disconnect,       // Disconnect wallet function
   sendBanano,       // Send BANANO function
   getTransactionHistory, // Get transaction history
+  getBalance,       // Get balance for any address
 } = useWallet();
 ```
 
 ### Components
 1. `BananoConnectButton`: Main wallet connection button
-2. `TransactionHistory`: Transaction history display
-3. `WalletDetails`: Wallet information display
+2. `ExamplesShowcase`: Interactive component selector
+3. Various example components for games and wallet features
 
 ## 🤝 Contributing
 
