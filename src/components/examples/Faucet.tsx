@@ -42,9 +42,9 @@ export function Faucet() {
   }
 
   return (
-    <div className="max-w-md mx-auto p-6 space-y-6">
-      <h2 className="text-2xl font-bold text-center">Faucet</h2>
-      <p className="text-center text-gray-600">
+    <div className="max-w-md mx-auto space-y-6">
+      <h2 className="text-2xl font-bold">Faucet</h2>
+      <p className="text-gray-600">
         Claim free BANANO once per day!
       </p>
       <button
@@ -64,6 +64,9 @@ export function Faucet() {
           {error}
         </div>
       )}
+      <p className="text-center text-gray-600">
+        {`Note: This is a simple in-memory claim store. Use a persistent store in a real application (like MongoDB) to track claims.`}
+      </p>
     </div>
   );
 }
