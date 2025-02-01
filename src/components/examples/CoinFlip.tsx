@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 type Guess = 'heads' | 'tails';
@@ -12,6 +12,23 @@ export function CoinFlip() {
   const [result, setResult] = useState<{ won: boolean; result: Guess; hash?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [gameBalance, setGameBalance] = useState('0.00');
+
+  // Fetch game balance when component mounts
+  useEffect(() => {
+    const fetchGameBalance = async () => {
+      const gameWalletAddress = process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS;
+      if (!gameWalletAddress) return;
+
+      try {
+        const balance = await getBalance(gameWalletAddress as `ban_${string}`);
+        setGameBalance(balance);
+      } catch (e) {
+        console.error('Error fetching initial game balance:', e);
+      }
+    };
+
+    fetchGameBalance();
+  }, [getBalance]);
 
   const handlePlay = async () => {
     if (!isConnected || !address || !selectedGuess || isPlaying) return;

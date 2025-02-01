@@ -20,6 +20,7 @@ export function CrashGame() {
   const [isBetting, setIsBetting] = useState(false);
   const [intervalId, setIntervalId] = useState<NodeJS.Timeout | null>(null);
   const [history, setHistory] = useState<number[]>([]);
+  const [gameBalance, setGameBalance] = useState<string | null>(null);
 
   // Explanation text for the user.
   const instructions = `
@@ -32,6 +33,22 @@ export function CrashGame() {
     • House Edge: There is a 1% chance (adjustable via the HOUSE_EDGE_PROB environment variable) that the game will immediately crash at 1.00x.
     • Note: Your payout is capped at 2.5% of the game wallet’s balance.
   `;
+
+  // Fetch game balance when component mounts
+  useEffect(() => {
+    const fetchGameBalance = async () => {
+      if (!gameWalletAddress) return;
+
+      try {
+        const balance = await getBalance(gameWalletAddress as `ban_${string}`);
+        setGameBalance(balance);
+      } catch (e) {
+        console.error('Error fetching initial game balance:', e);
+      }
+    };
+
+    fetchGameBalance();
+  }, [getBalance, gameWalletAddress]);
 
   // Start a new game.
   const startGame = async () => {
@@ -88,6 +105,10 @@ export function CrashGame() {
         setFinalCrashMultiplier(data.crashMultiplier);
         setResult(data.message);
       }
+
+      const newGameBalance = await getBalance(gameWalletAddress as `ban_${string}`);
+      setGameBalance(newGameBalance);
+
     } catch (error) {
       setResult(error instanceof Error ? error.message : "Error cashing out.");
     }
@@ -138,6 +159,7 @@ export function CrashGame() {
   return (
     <div className="max-w-md mx-auto space-y-6">
       <h2 className="text-2xl font-bold">Crash Game</h2>
+      <p>Game balance: {gameBalance} BAN</p>
       <div className="bg-gray-50 p-4 rounded-md text-sm text-gray-700 whitespace-pre-line">
         {instructions}
       </div>
