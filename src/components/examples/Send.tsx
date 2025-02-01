@@ -35,7 +35,7 @@ export function SendBananoForm() {
   };
 
   return (
-    <div className="w-full max-w-sm space-y-6">
+    <div className="w-full space-y-6">
       <h3 className="text-sm font-medium text-zinc-400 mb-2">Send BANANO</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
         <input

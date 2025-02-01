@@ -157,7 +157,7 @@ export function CrashGame() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       <h2 className="text-2xl font-bold">Crash Game</h2>
       <p>Game balance: {gameBalance} BAN</p>
       <div className="bg-gray-50 p-4 rounded-md text-sm text-gray-700 whitespace-pre-line">

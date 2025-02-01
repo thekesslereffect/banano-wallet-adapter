@@ -47,7 +47,7 @@ export function TipJar() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="w-fullmx-auto space-y-6">
       <h2 className="text-2xl font-bold">Tip Jar</h2>
       <p className=" text-gray-600">
         Support the project by donating BANANO!

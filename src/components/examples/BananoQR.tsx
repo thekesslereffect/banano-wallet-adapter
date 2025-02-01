@@ -32,7 +32,7 @@ export function BananoQR() {
   if (!isConnected) return null;
 
   return (
-    <div className="w-full max-w-sm space-y-8">
+    <div className="w-full space-y-8">
       <div className="text-center space-y-4">
         {qrCode && (
           <div className="bg-white p-4 rounded-2xl inline-block">

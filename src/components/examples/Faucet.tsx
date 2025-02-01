@@ -42,7 +42,7 @@ export function Faucet() {
   }
 
   return (
-    <div className="max-w-md mx-auto space-y-6">
+    <div className="w-full mx-auto space-y-6">
       <h2 className="text-2xl font-bold">Faucet</h2>
       <p className="text-gray-600">
         Claim free BANANO once per day!

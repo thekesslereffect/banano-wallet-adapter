@@ -43,7 +43,7 @@ export function TransactionHistory() {
   if (!isConnected) return null;
 
   return (
-    <div className="w-full max-w-sm space-y-4">
+    <div className="w-full space-y-4">
       <h3 className="text-sm font-medium text-zinc-400">Transaction History</h3>
       <div className="space-y-2 max-h-96 overflow-y-auto pr-2 scrollbar-thin scrollbar-thumb-zinc-200 scrollbar-track-transparent hover:scrollbar-thumb-zinc-300">
         {loading && transactions.length === 0 ? (

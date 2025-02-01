@@ -99,7 +99,7 @@ export function CoinFlip() {
   }
 
   return (
-    <div>
+    <div className="w-full">
       <h2 className="text-2xl font-bold mb-4">Banano Coin Flip</h2>
       <div className="mb-6">
         <p className="text-sm text-gray-600 mb-2">Game balance: {gameBalance} BAN</p>
