@@ -9,6 +9,7 @@ import { CoinFlip } from '@/components/examples/CoinFlip';
 import { TipJar } from '@/components/examples/TipJar';
 import { CrashGame } from '@/components/examples/CrashGame';
 import { Faucet } from '@/components/examples/Faucet';
+import { TokenGateExample } from './examples/TokenGateExample';
 
 const componentsMap: Record<string, ReactNode> = {
   Balance: <Balance />,
@@ -19,6 +20,7 @@ const componentsMap: Record<string, ReactNode> = {
   TipJar: <TipJar />,
   'Crash Game': <CrashGame />,
   Faucet: <Faucet />,
+  'Token Gate': <TokenGateExample />,
 };
 
 export function ExamplesShowcase() {
