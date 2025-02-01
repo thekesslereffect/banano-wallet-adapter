@@ -9,6 +9,7 @@ import { TransactionHistory } from '@/components/examples/TransactionHistory';
 import { CoinFlip } from '@/components/examples/CoinFlip';
 import { TipJar } from '@/components/examples/TipJar';
 import { CrashGame } from '@/components/examples/CrashGame';
+import { Faucet } from '@/components/examples/Faucet';
 
 export default function Home() {
   return (
@@ -32,6 +33,7 @@ export default function Home() {
             <CoinFlip />
             <TipJar />
             <CrashGame />
+            <Faucet />
           </div>
         </section>
       </div>
