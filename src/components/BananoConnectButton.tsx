@@ -3,8 +3,8 @@
 import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
-type ThemeName = 'black' | 'white' | 'blue' | 'yellow' | 'green';
-type ModalThemeName = 'light' | 'dark';
+export type ThemeName = 'black' | 'white' | 'blue' | 'yellow' | 'green';
+export type ModalThemeName = 'light' | 'dark';
 
 interface ButtonTheme {
   backgroundColor: string;
@@ -24,7 +24,7 @@ interface ModalTheme {
   secondaryButton: string;
 }
 
-const buttonThemes: Record<ThemeName, ButtonTheme> = {
+export const buttonThemes: Record<ThemeName, ButtonTheme> = {
   black: {
     backgroundColor: 'bg-gradient-to-b from-zinc-800 to-black',
     textColor: 'text-white',
@@ -57,7 +57,7 @@ const buttonThemes: Record<ThemeName, ButtonTheme> = {
   },
 };
 
-const modalThemes: Record<ModalThemeName, ModalTheme> = {
+export const modalThemes: Record<ModalThemeName, ModalTheme> = {
   light: {
     backgroundColor: 'bg-white',
     inputBackground: 'bg-zinc-50',
