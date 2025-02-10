@@ -3,6 +3,7 @@
 import React, { useEffect, useState } from 'react';
 import QRCode from 'qrcode';
 import { useWallet } from '@/lib/banano-wallet-adapter';
+import Image from 'next/image';
 
 export function BananoQR() {
   const { isConnected, address } = useWallet();
@@ -36,7 +37,7 @@ export function BananoQR() {
       <div className="text-center space-y-4">
         {qrCode && (
           <div className="bg-white p-4 rounded-2xl inline-block">
-            <img src={qrCode} alt="Wallet QR Code" className="w-48 h-48" />
+            <Image src={qrCode} alt="Wallet QR Code" width={192} height={192} className="w-48 h-48" />
           </div>
         )}
         <div className="relative">

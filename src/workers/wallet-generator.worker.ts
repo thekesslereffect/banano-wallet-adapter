@@ -1,6 +1,6 @@
 import { Wallet, RPC } from 'banani';
 
-const ctx: Worker = self as any;
+const ctx: Worker = self as unknown as Worker;
 
 type MatchType = 'prefix' | 'suffix' | 'anywhere' | 'either';
 

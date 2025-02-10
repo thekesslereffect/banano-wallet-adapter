@@ -3,12 +3,14 @@ import React, {
   useContext,
   useState,
   useEffect,
+  useCallback,
   ReactNode,
   useMemo,
 } from 'react';
 import * as banani from 'banani';
 import * as bip39 from 'bip39';
 import { SeedManager } from './SeedManager';
+import { AccountHistoryBlock, AccountHistoryRawBlock } from 'banani';
 
 const DEFAULT_RPC_URL = 'https://kaliumapi.appditto.com/api';
 const REFRESH_INTERVAL = 5000; // 5 seconds
@@ -28,8 +30,8 @@ interface WalletContextType {
   ) => Promise<
     Array<{
       type: 'send' | 'receive';
-      account: string;
-      amount: string;
+      account: `ban_${string}` | `nano_${string}`;
+      amount: `${number}`;
       hash: string;
       timestamp: number;
     }>
@@ -61,7 +63,7 @@ export function BananoWalletProvider({
 
   const rpc = useMemo(() => new banani.RPC(rpcUrl), [rpcUrl]);
 
-  const getBalance = async (addr: string): Promise<string> => {
+  const getBalance = useCallback(async (addr: string): Promise<string> => {
     try {
       const info = await rpc.get_account_info(addr as `ban_${string}`);
       // If the account isn't found, return 0.00.
@@ -82,7 +84,7 @@ export function BananoWalletProvider({
       console.error("Error fetching balance:", error);
       return "0.00";
     }
-  };
+  }, [rpc]);
 
   const connect = async (seedOrPrivateKey?: string): Promise<string> => {
     setIsConnecting(true);
@@ -160,6 +162,36 @@ export function BananoWalletProvider({
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [seedManager]);
 
+  const getUserBalance = useCallback(async () => {
+    if (!address) return;
+    const newBalance = await getBalance(address);
+    setBalance(newBalance);
+  }, [address, getBalance]);
+
+  const receivePending = useCallback(async (blockHash: string) => {
+    if (!wallet || !address) throw new Error('Wallet not connected');
+    try {
+      const hash = await wallet.receive(blockHash);
+      await getUserBalance();
+      return hash;
+    } catch (error) {
+      console.error('Error receiving pending transaction:', error);
+      throw error;
+    }
+  }, [wallet, address, getUserBalance]);
+
+  const receiveAllPending = useCallback(async () => {
+    if (!wallet || !address) throw new Error('Wallet not connected');
+    try {
+      const hash = await wallet.receive_all();
+      await getUserBalance();
+      return hash;
+    } catch (error) {
+      console.error('Error receiving all pending transactions:', error);
+      throw error;
+    }
+  }, [wallet, address, getUserBalance]);
+
   // Updated effect: Check for pending transactions and handle "Account not found" gracefully.
   // Updated effect: Check for pending transactions and update balance.
   useEffect(() => {
@@ -217,7 +249,7 @@ export function BananoWalletProvider({
     return () => {
       mounted = false;
     };
-  }, [isConnected, address]);
+  }, [isConnected, address, receiveAllPending, rpc]);
 
 
   const disconnect = () => {
@@ -246,48 +278,34 @@ export function BananoWalletProvider({
     try {
       const history = await rpc.get_account_history(addr as `ban_${string}`, 10);
       if (!history || !history.history) return [];
-      return history.history.map((tx: any) => ({
-        type: tx.type,
-        account: tx.account,
-        amount: banani.raw_to_whole(BigInt(tx.amount)),
-        hash: tx.hash,
-        timestamp: tx.local_timestamp,
-      }));
+      return history.history.map((tx: AccountHistoryBlock | AccountHistoryRawBlock) => {
+        // Filter out non-send/receive transactions
+        if (tx.type !== 'send' && tx.type !== 'receive') {
+          return null;
+        }
+        return {
+          type: tx.type,
+          account: tx.account,
+          amount: banani.raw_to_whole(BigInt(tx.amount)) as `${number}`,
+          hash: tx.hash,
+          timestamp: Number(tx.local_timestamp),
+        };
+      }).filter((tx): tx is { 
+        type: 'send' | 'receive';
+        account: `ban_${string}` | `nano_${string}`;
+        amount: `${number}`;
+        hash: string;
+        timestamp: number;
+      } => tx !== null);
     } catch (error) {
       console.error('Error fetching transaction history:', error);
       throw error;
     }
   };
 
-  const receivePending = async (blockHash: string) => {
-    if (!wallet || !address) throw new Error('Wallet not connected');
-    try {
-      const hash = await wallet.receive(blockHash);
-      await getUserBalance();
-      return hash;
-    } catch (error) {
-      console.error('Error receiving pending transaction:', error);
-      throw error;
-    }
-  };
+  
 
-  const receiveAllPending = async () => {
-    if (!wallet || !address) throw new Error('Wallet not connected');
-    try {
-      const hash = await wallet.receive_all();
-      await getUserBalance();
-      return hash;
-    } catch (error) {
-      console.error('Error receiving all pending transactions:', error);
-      throw error;
-    }
-  };
-
-  const getUserBalance = async () => {
-    if (!address) return;
-    const newBalance = await getBalance(address);
-    setBalance(newBalance);
-  };
+  
 
   const value: WalletContextType = {
     address,

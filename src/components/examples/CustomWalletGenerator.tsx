@@ -2,7 +2,6 @@
 
 import { useState, useCallback, useEffect, useRef } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
-import { RPC } from 'banani';
 import * as bip39 from 'bip39';
 
 type MatchType = 'prefix' | 'suffix' | 'anywhere' | 'either';
@@ -190,7 +189,7 @@ export function CustomWalletGenerator() {
       <div className="space-y-2">
         <h2 className="text-2xl font-bold text-gray-900">Custom Wallet Generator</h2>
         <p className="text-gray-500 text-sm">
-          Generate a Banano wallet with a custom address pattern. The address will start with "ban_1" or "ban_3".
+          Generate a Banano wallet with a custom address pattern. The address will start with &quot;ban_1&quot; or &quot;ban_3&quot;.
         </p>
       </div>
       

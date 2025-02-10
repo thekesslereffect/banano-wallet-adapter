@@ -11,8 +11,6 @@ export function CrashGame() {
   // Game state
   const [gameActive, setGameActive] = useState(false);
   const [multiplier, setMultiplier] = useState(1.0);
-  // lockedMultiplier is the value when the user clicked cash out.
-  const [lockedMultiplier, setLockedMultiplier] = useState<number | null>(null);
   // finalCrashMultiplier is returned by the server after cash out.
   const [finalCrashMultiplier, setFinalCrashMultiplier] = useState<number | null>(null);
   const [hasCashedOut, setHasCashedOut] = useState(false);
@@ -56,7 +54,6 @@ export function CrashGame() {
     // Reset state for a new round.
     setGameActive(true);
     setMultiplier(1.0);
-    setLockedMultiplier(null);
     setFinalCrashMultiplier(null);
     setHasCashedOut(false);
     setResult(null);
@@ -72,7 +69,7 @@ export function CrashGame() {
         setMultiplier((prev) => Number((prev + prev * 0.01).toFixed(2)));
       }, 100);
       setIntervalId(id);
-    } catch (error) {
+    } catch {
       setResult("Error placing bet. Please try again.");
       setGameActive(false);
     } finally {
@@ -83,8 +80,6 @@ export function CrashGame() {
   // Cash out: record the locked multiplier and call the API.
   const cashOut = async () => {
     if (!gameActive || hasCashedOut) return;
-    // Record the multiplier at cash-out time.
-    setLockedMultiplier(multiplier);
     setHasCashedOut(true);
 
     try {

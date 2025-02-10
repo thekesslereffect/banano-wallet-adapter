@@ -38,7 +38,7 @@ export function TransactionHistory() {
     return () => {
       isMounted = false;
     };
-  }, [isConnected, address, balance]);
+  }, [isConnected, address, balance, getTransactionHistory]);
 
   if (!isConnected) return null;
 

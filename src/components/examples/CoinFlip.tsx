@@ -6,7 +6,7 @@ import { useWallet } from '@/lib/banano-wallet-adapter';
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { address, isConnected, sendBanano, getBalance, getUserBalance } = useWallet();
+  const { address, isConnected, sendBanano, getBalance } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{ won: boolean; result: Guess; hash?: string } | null>(null);

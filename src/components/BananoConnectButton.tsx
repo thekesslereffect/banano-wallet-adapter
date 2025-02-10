@@ -126,7 +126,7 @@ export function BananoConnectButton({
       await connect(mnemonic);
       setShowModal(false);
       setMnemonic('');
-    } catch (e) {
+    } catch {
       setError('Invalid mnemonic phrase');
     }
   };
@@ -136,7 +136,7 @@ export function BananoConnectButton({
       setError('');
       const { mnemonic: newMnemonic } = await generateNewWallet();
       setMnemonic(newMnemonic);
-    } catch (e) {
+    } catch {
       setError('Error generating new wallet');
     }
   };
@@ -152,8 +152,8 @@ export function BananoConnectButton({
     if (!seed) return;
     try {
       await navigator.clipboard.writeText(seed);
-    } catch (e) {
-      console.error('Failed to copy seed:', e);
+    } catch {
+      console.error('Failed to copy seed:');
     }
   };
 
