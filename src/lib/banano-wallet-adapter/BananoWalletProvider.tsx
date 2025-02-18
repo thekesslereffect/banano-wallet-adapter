@@ -105,6 +105,8 @@ export function BananoWalletProvider({
       // TODO: Implement BNS lookup
       // You can find those by crawl the user's address' received transactions including received blocks, find sends that are a Domain Resolve block (amount is 4224)
       // Use resolver.resolve_backwards_ish to get the domain name using the domain address.
+      console.log(resolver);
+      console.log(rpc);
       return null;
     } catch (error) {
       console.error('Error in lookupBNS:', error);
