@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function SendBananoForm() {

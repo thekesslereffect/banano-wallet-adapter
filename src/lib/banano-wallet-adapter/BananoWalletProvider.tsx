@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode, useMemo } from 'react';
+import React, { createContext, useContext, useState, useEffect, useMemo, useCallback, ReactNode } from 'react';
 import * as banani from 'banani';
 import * as bip39 from 'bip39';
 import { SeedManager } from './SeedManager';
@@ -50,11 +50,10 @@ export function BananoWalletProvider({
   const rpc = useMemo(() => new banani.RPC(rpcUrl), [rpcUrl]);
   const resolver = useMemo(() => new Resolver(rpc, TLD_MAPPING), [rpc]);
 
-  const connect = async (seedOrPrivateKey?: string): Promise<string> => {
+  const connect = useCallback(async (seedOrPrivateKey?: string): Promise<string> => {
     setIsConnecting(true);
     try {
       await seedManager.initialize();
-  
       let finalSeed: string;
       if (seedOrPrivateKey) {
         if (seedOrPrivateKey.trim().includes(" ")) {
@@ -71,11 +70,9 @@ export function BananoWalletProvider({
       
       const seedRef = await seedManager.storeSeed(finalSeed);
       localStorage.setItem("bananoWalletSeedRef", seedRef);
-  
       const newWallet = new banani.Wallet(rpc, finalSeed);
       setWallet(newWallet);
       setIsConnected(true);
-      
       return newWallet.address;
     } catch (error) {
       console.error("Error in connect:", error);
@@ -83,19 +80,44 @@ export function BananoWalletProvider({
     } finally {
       setIsConnecting(false);
     }
-  };
-  
-  const generateNewWallet = async (): Promise<{ mnemonic: string; address: string }> => {
+  }, [rpc, seedManager]);
+
+  const disconnect = useCallback(() => {
+    setWallet(null);
+    setIsConnected(false);
+    localStorage.removeItem('bananoWalletSeedRef');
+    seedManager.clearMemory();
+  }, [seedManager]);
+
+  const resolveBNS = useCallback(async (name: string, tld: string): Promise<string | null> => {
     try {
-      const { seed: generatedSeed } = banani.Wallet.gen_random_wallet(rpc);
-      const mnemonic = bip39.entropyToMnemonic(generatedSeed.toLowerCase());
-      const newAddress = await connect(generatedSeed);
-      return { mnemonic, address: newAddress };
-    } catch (error) {
-      console.error("Error generating new wallet:", error);
-      throw error;
+      const domain = await resolver.resolve(name, tld);
+      if (!domain || domain.burned) return null;
+      console.log('domain', domain);
+      return domain.resolved_address ?? null;
+    } catch {
+      return null;
     }
-  };
+  }, [resolver]);
+
+  const lookupBNS = useCallback(async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
+    try {
+      // TODO: Implement BNS lookup
+      // You can find those by crawl the user's address' received transactions including received blocks, find sends that are a Domain Resolve block (amount is 4224)
+      // Use resolver.resolve_backwards_ish to get the domain name using the domain address.
+      return null;
+    } catch (error) {
+      console.error('Error in lookupBNS:', error);
+      return null;
+    }
+  }, [resolver, rpc]);
+
+  const generateNewWallet = useCallback(async (): Promise<{ mnemonic: string; address: string }> => {
+    const { seed: generatedSeed } = banani.Wallet.gen_random_wallet(rpc);
+    const mnemonic = bip39.entropyToMnemonic(generatedSeed.toLowerCase());
+    const newAddress = await connect(generatedSeed);
+    return { mnemonic, address: newAddress };
+  }, [rpc, connect]);
 
   useEffect(() => {
     const tryReconnect = async () => {
@@ -104,15 +126,14 @@ export function BananoWalletProvider({
         try {
           const retrievedSeed = await seedManager.retrieveSeed(seedRef);
           if (retrievedSeed) await connect(retrievedSeed);
-        } catch (error) {
-          console.error('Reconnection failed:', error);
+        } catch {
           localStorage.removeItem('bananoWalletSeedRef');
         }
       }
     };
 
     seedManager.initialize().then(tryReconnect).catch(console.error);
-  }, [seedManager]);
+  }, [seedManager, connect, isConnected, isConnecting]);
 
   useEffect(() => {
     if (!wallet) return;
@@ -125,7 +146,7 @@ export function BananoWalletProvider({
           await wallet.receive_all();
           setBalance(Number(banani.raw_to_whole(BigInt(info.balance))).toFixed(2));
         }
-      } catch (error) {
+      } catch {
         try {
           const receivable = await wallet.rpc.call({
             action: 'receivable',
@@ -158,48 +179,6 @@ export function BananoWalletProvider({
     };
   }, [wallet]);
 
-  // Fix resolver function to handle Domain type correctly
-  const resolveBNS = async (name: string, tld: string): Promise<string | null> => {
-    try {
-      const domain = await resolver.resolve(name, tld);
-      if (!domain || domain.burned) {
-        console.log('Domain not found or burned:', name, tld);
-        return null;
-      }
-      
-      return domain.resolved_address ?? null;
-    } catch (error) {
-      console.error('Error resolving BNS:', error);
-      return null;
-    }
-  };
-
-  const lookupBNS = async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
-    for (const [tld] of Object.entries(TLD_MAPPING)) {
-      try {
-        // Get domain info for this address and TLD
-        console.log('Looking up BNS for address:', address, 'with TLD:', tld);
-        const domain = await resolver.resolve_backwards_ish(address, tld);
-        console.log('Domain:', domain);
-        // If we got a domain back and it's not burned, use it
-        if (domain && !domain.burned) {
-          const bnsName = `${domain.name}.${tld}`;
-          console.log('Found BNS:', {
-            address,
-            tld,
-            name: domain.name,
-            history: domain.history
-          });
-          return bnsName;
-        }
-      } catch (e) {
-        // If resolve_backwards_ish fails, this address doesn't own a domain for this TLD
-        continue;
-      }
-    }
-    return null;
-  };
-
   useEffect(() => {
     if (!wallet?.address) return;
 
@@ -212,14 +191,7 @@ export function BananoWalletProvider({
       if (name) resolvedBnsCache.set(wallet.address, name);
       setBnsName(name);
     });
-  }, [wallet?.address, resolver, resolvedBnsCache]);
-
-  const disconnect = () => {
-    setWallet(null);
-    setIsConnected(false);
-    localStorage.removeItem('bananoWalletSeedRef');
-    seedManager.clearMemory();
-  };
+  }, [wallet?.address, resolver, resolvedBnsCache, lookupBNS]);
 
   const value = useMemo(() => ({
     wallet,
@@ -234,7 +206,18 @@ export function BananoWalletProvider({
     connect,
     disconnect,
     generateNewWallet,
-  }), [wallet, bnsName, isConnected, isConnecting, balance, resolveBNS]);
+  }), [
+    wallet,
+    bnsName,
+    isConnected,
+    isConnecting,
+    balance,
+    resolveBNS,
+    lookupBNS,
+    connect,
+    disconnect,
+    generateNewWallet
+  ]);
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;
 }
