@@ -218,7 +218,7 @@ export function BananoWalletProvider({
     };
 
     updateBalance();
-    const interval = setInterval(updateBalance, 2000);
+    const interval = setInterval(updateBalance, 10000);
     return () => {
       mounted = false;
       clearInterval(interval);
