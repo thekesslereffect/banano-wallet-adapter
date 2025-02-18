@@ -102,12 +102,37 @@ export function BananoWalletProvider({
 
   const lookupBNS = useCallback(async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
     try {
-      // TODO: Implement BNS lookup
-      // You can find those by crawl the user's address' received transactions including received blocks, find sends that are a Domain Resolve block (amount is 4224)
-      // Use resolver.resolve_backwards_ish to get the domain name using the domain address.
-      console.log(address);
-      console.log(resolver);
-      console.log(rpc);
+      // Get account history
+      const history = await rpc.call({
+        action: 'account_history',
+        account: address,
+        count: '1000',
+        raw: true
+      });
+
+      if (!history.history || !Array.isArray(history.history)) {
+        return null;
+      }
+
+      // Look for Domain Resolve blocks (amount = 4224)
+      for (const block of history.history) {
+        if (block.type !== 'receive' && block.subtype !== 'receive') continue;
+        if (block.amount !== '4224') continue;
+
+        // Try each TLD using the source address
+        for (const tld of Object.keys(TLD_MAPPING)) {
+          try {
+            // @ts-ignore - bypass type checking for resolver.resolve_backwards_ish
+            const domain = await resolver.resolve_backwards_ish(block.source as `ban_${string}`, tld);
+            if (domain && !domain.burned) {
+              return `${domain.name}.${domain.tld}`;
+            }
+          } catch {
+            continue;
+          }
+        }
+      }
+
       return null;
     } catch (error) {
       console.error('Error in lookupBNS:', error);

@@ -59,7 +59,7 @@ export function BNSLookup() {
               type="text"
               value={address}
               onChange={(e) => setAddress(e.target.value)}
-              placeholder="Enter ban_ address"
+              placeholder="CURRENTLY NOT WORKING"
               className="flex-1 p-2 border rounded-xl"
             />
             <button
