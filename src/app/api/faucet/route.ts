@@ -3,7 +3,7 @@ import * as banani from 'banani';
 
 const FAUCET_WALLET_SEED = process.env.FAUCET_WALLET_SEED;
 const RPC_URL = process.env.NEXT_PUBLIC_RPC_URL || 'https://kaliumapi.appditto.com/api';
-const CLAIM_AMOUNT = '1'; // Claim amount in BANANO
+const CLAIM_AMOUNT = '0.1'; // Claim amount in BANANO
 
 if (!FAUCET_WALLET_SEED) {
   throw new Error('FAUCET_WALLET_SEED environment variable is not set');
