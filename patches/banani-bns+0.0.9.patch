@@ -1,0 +1,54 @@
+diff --git a/node_modules/banani-bns/resolver.ts b/node_modules/banani-bns/resolver.ts
+index ac65511..5bf30d4 100644
+--- a/node_modules/banani-bns/resolver.ts
++++ b/node_modules/banani-bns/resolver.ts
+@@ -26,8 +26,6 @@ class Account {
+   }
+ }
+ 
+-
+-
+ export class TLDAccount extends Account {
+   all_issued: Domain[];
+ 
+@@ -120,6 +118,10 @@ export class DomainAccount extends Account {
+   }
+ 
+   async crawl(crawl_size = 500): Promise<Domain> {
++    if (!this.domain) {
++      throw new Error("Domain not initialized");
++    }
++
+     let open_hash, frontier_hash;
+     try {
+       [open_hash, frontier_hash] = await this.get_open_and_frontier();
+@@ -212,12 +214,15 @@ export class Resolver {
+     if (!domain) return domain;
+     let max_rpc_calls_after_tld = this.max_rpc_calls_after_tld;
+     while (true) {
+-      const current_domain_account = (domain.history[domain.history.length - 1] as DomainTransfer).to;
+-      const domain_account = new DomainAccount(this.rpc, current_domain_account, domain, max_rpc_calls_after_tld);
++      if (!domain) break;
++      const current_domain_account: Address = (domain.history[domain.history.length - 1] as DomainTransfer).to;
++      const domain_account: DomainAccount = new DomainAccount(this.rpc, current_domain_account, domain, max_rpc_calls_after_tld);
+       const old_l = domain.history.length;
+       domain = await domain_account.crawl(crawl_size);
+-      max_rpc_calls_after_tld -= domain_account.rpc_calls;
+-      if (domain.history[domain.history.length - 1].type !== "transfer" || domain.burned || old_l === domain.history.length) break; //if length unchanged, means transfer unreceived
++      if (max_rpc_calls_after_tld !== undefined) {
++        max_rpc_calls_after_tld -= domain_account.rpc_calls;
++      }
++      if (domain.history[domain.history.length - 1].type !== "transfer" || domain.burned || old_l === domain.history.length) break;
+     }
+     return domain;
+   }
+@@ -231,7 +236,8 @@ export class Resolver {
+     let domain = await this.resolve(domain_name, tld, crawl_size);
+     //.reverse() mutates the original array, evil bastards!
+     const last_transfer = domain?.history.slice().reverse().find((b): b is DomainTransfer => b.type === "transfer");
+-    if (last_transfer.to === domain_account_address) return domain;
++    if (last_transfer && last_transfer.to === domain_account_address) return domain;
++    return undefined;
+   }
+ }
+ 
