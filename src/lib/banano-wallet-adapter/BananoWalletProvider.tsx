@@ -102,40 +102,58 @@ export function BananoWalletProvider({
 
   const lookupBNS = useCallback(async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
     try {
-      // Get account history
+      // Fetch confirmed account history
       const history = await rpc.call({
         action: 'account_history',
         account: address,
         count: '1000',
-        raw: true
+        raw: true,
       });
+      
+      let candidateDomainAddresses: string[] = [];
 
-      if (!history.history || !Array.isArray(history.history)) {
-        return null;
+      if (history.history && history.history.length > 0) {
+        history.history.forEach((block: any) => {
+          if (block.subtype === 'receive' && BigInt(block.amount ?? "0") === 4224n) {
+            if (block.account) candidateDomainAddresses.push(block.account);
+          }
+        });
       }
 
-      // Look for Domain Resolve blocks (amount = 4224)
-      for (const block of history.history) {
-        if (block.type !== 'receive' && block.subtype !== 'receive') continue;
-        if (block.amount !== '4224') continue;
-
-        // Try each TLD using the source address
+      // Fetch pending blocks and include pending receives where amount == 4224n.
+      const pending = await rpc.call({
+        action: 'pending',
+        account: address,
+        count: '100',
+        threshold: '1'
+      });
+      if (pending.blocks) {
+        Object.entries(pending.blocks).forEach(([hash, block]: [string, any]) => {
+          if (BigInt(block.amount ?? "0") === 4224n) {
+            if (block.source) candidateDomainAddresses.push(block.source);
+          }
+        });
+      }
+      
+      if (candidateDomainAddresses.length === 0) return null;
+      
+      // For each candidate Domain Address, try each TLD mapping.
+      for (const candidate of candidateDomainAddresses) {
         for (const tld of Object.keys(TLD_MAPPING)) {
           try {
-            // @ts-ignore - bypass type checking for resolver.resolve_backwards_ish
-            const domain = await resolver.resolve_backwards_ish(block.source as `ban_${string}`, tld);
+            const domain = await resolver.resolve_backwards_ish(candidate as `ban_${string}`, tld);
             if (domain && !domain.burned) {
-              return `${domain.name}.${domain.tld}`;
+              return `${domain.name}.${tld}`;
             }
           } catch {
             continue;
           }
         }
       }
-
+      
       return null;
     } catch (error) {
-      console.error('Error in lookupBNS:', error);
+      console.error("Error in lookupBNS:", error);
       return null;
     }
   }, [resolver, rpc]);
@@ -200,7 +218,7 @@ export function BananoWalletProvider({
     };
 
     updateBalance();
-    const interval = setInterval(updateBalance, 5000);
+    const interval = setInterval(updateBalance, 2000);
     return () => {
       mounted = false;
       clearInterval(interval);
