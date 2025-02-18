@@ -4,15 +4,9 @@ import React from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function Balance() {
-  const { isConnected, balance } = useWallet();
+  const { balance, isConnected } = useWallet();
 
-  if (!isConnected) {
-    return (
-      <p className="text-sm font-medium text-zinc-400 mb-2">
-        Please connect your wallet to view your balance.
-      </p>
-    );
-  }
+  if (!isConnected) return null;
 
   return (
     <div className="w-full space-y-4">

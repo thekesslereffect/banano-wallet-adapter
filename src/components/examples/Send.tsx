@@ -1,10 +1,10 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function SendBananoForm() {
-  const { sendBanano } = useWallet();
+  const { wallet, isConnected, resolveBNS } = useWallet();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [feedback, setFeedback] = useState<{ error?: string; success?: string }>({});
@@ -12,18 +12,43 @@ export function SendBananoForm() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    if (!wallet) return;
+    
     setFeedback({});
     setIsLoading(true);
 
     try {
-      if (!toAddress.startsWith('ban_') || toAddress.length < 64) {
-        throw new Error('Invalid address format.');
+      let targetAddress = toAddress;
+      
+      // Check if input is a BNS name
+      if (toAddress.includes('.')) {
+        const [name, tld] = toAddress.split('.');
+        if (!name || !tld) {
+          throw new Error('Invalid BNS format. Use name.tld');
+        }
+        console.log('Resolving BNS:', name, tld); // Debug log
+        const resolved = await resolveBNS(name, tld);
+        console.log('Resolved address:', resolved); // Debug log
+        if (!resolved) {
+          throw new Error('Could not resolve BNS name');
+        }
+        targetAddress = resolved;
       }
+
+      // Now targetAddress should be a string
+      if (typeof targetAddress !== 'string' || !targetAddress.startsWith('ban_') || targetAddress.length < 64) {
+        throw new Error('Invalid address format');
+      }
+
       const numAmount = Number(amount);
       if (isNaN(numAmount) || numAmount <= 0) {
         throw new Error('Invalid amount. Please enter a positive number.');
       }
-      const hash = await sendBanano(toAddress as `ban_${string}`, numAmount.toString());
+
+      const hash = await wallet.send(
+        targetAddress as `ban_${string}`,
+        `${numAmount}` as `${number}`
+      );
       setFeedback({ success: `Transaction sent! Hash: ${hash}` });
       setToAddress('');
       setAmount('');
@@ -34,18 +59,22 @@ export function SendBananoForm() {
     }
   };
 
+  if (!isConnected) return null;
+  
   return (
     <div className="w-full space-y-6">
       <h3 className="text-sm font-medium text-zinc-400 mb-2">Send BANANO</h3>
       <form onSubmit={handleSubmit} className="space-y-4">
-        <input
-          type="text"
-          placeholder="Recipient Address (ban_...)"
-          value={toAddress}
-          onChange={(e) => setToAddress(e.target.value)}
-          className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm"
-          disabled={isLoading}
-        />
+        <div>
+          <input
+            type="text"
+            placeholder="Recipient Address (ban_... or name.ban)"
+            value={toAddress}
+            onChange={(e) => setToAddress(e.target.value)}
+            className="w-full px-4 py-3 rounded-xl bg-zinc-100 text-sm"
+            disabled={isLoading}
+          />
+        </div>
         <input
           type="number"
           step="0.01"

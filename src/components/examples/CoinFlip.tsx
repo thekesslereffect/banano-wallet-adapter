@@ -2,36 +2,36 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
+import * as banani from 'banani';
 
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { address, isConnected, sendBanano, getBalance } = useWallet();
+  const { wallet, isConnected } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{ won: boolean; result: Guess; hash?: string } | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [gameBalance, setGameBalance] = useState('0.00');
 
-  // Fetch game balance when component mounts
   useEffect(() => {
     const fetchGameBalance = async () => {
       const gameWalletAddress = process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS;
-      if (!gameWalletAddress) return;
+      if (!gameWalletAddress || !wallet) return;
 
       try {
-        const balance = await getBalance(gameWalletAddress as `ban_${string}`);
-        setGameBalance(balance);
+        const info = await wallet.rpc.get_account_info(gameWalletAddress as `ban_${string}`);
+        setGameBalance(banani.raw_to_whole(BigInt(info.balance)));
       } catch (e) {
         console.error('Error fetching initial game balance:', e);
       }
     };
 
     fetchGameBalance();
-  }, [getBalance]);
+  }, [wallet]);
 
   const handlePlay = async () => {
-    if (!isConnected || !address || !selectedGuess || isPlaying) return;
+    if (!isConnected || !wallet || !selectedGuess || isPlaying) return;
 
     setIsPlaying(true);
     setError(null);
@@ -45,17 +45,12 @@ export function CoinFlip() {
       return;
     }
 
-    // Update game wallet balance (for display purposes).
-    try {
-      const balance = await getBalance(gameWalletAddress as `ban_${string}`);
-      setGameBalance(balance);
-    } catch (e) {
-      console.error('Error fetching game wallet balance:', e);
-    }
-
     try {
       // Send a bet of 0.1 BAN to the game wallet.
-      await sendBanano(gameWalletAddress as `ban_${string}`, '0.1');
+      await wallet.send(
+        gameWalletAddress as `ban_${string}`, 
+        `0.1` as `${number}`
+      );
 
       // Call the coinflip API endpoint.
       const response = await fetch('/api/coinflip', {
@@ -65,7 +60,7 @@ export function CoinFlip() {
         },
         body: JSON.stringify({
           playerGuess: selectedGuess,
-          playerAddress: address
+          playerAddress: wallet.address
         })
       });
 
@@ -81,8 +76,8 @@ export function CoinFlip() {
       });
 
       // Update the game wallet balance after the game.
-      const newGameBalance = await getBalance(gameWalletAddress as `ban_${string}`);
-      setGameBalance(newGameBalance);
+      const newGameBalance = await wallet.rpc.get_account_info(gameWalletAddress as `ban_${string}`);
+      setGameBalance(banani.raw_to_whole(BigInt(newGameBalance.balance)));
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to play game');
     } finally {

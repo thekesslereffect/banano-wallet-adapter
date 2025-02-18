@@ -4,12 +4,14 @@ import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function Faucet() {
-  const { address, isConnected, getUserBalance } = useWallet();
+  const { wallet, address, isConnected } = useWallet();
   const [isClaiming, setIsClaiming] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
 
   const handleClaim = async () => {
+    if (!wallet || !address) return;
+    
     setIsClaiming(true);
     setMessage(null);
     setError(null);
@@ -24,7 +26,11 @@ export function Faucet() {
         setError(data.error || 'Claim failed.');
       } else {
         setMessage(data.message);
-        await getUserBalance();
+        try {
+          await wallet.receive_all();
+        } catch (error) {
+          console.error('Error receiving faucet funds:', error);
+        }
       }
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Claim failed.');

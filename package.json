@@ -12,6 +12,7 @@
     "@bananocoin/bananojs": "^2.10.0",
     "@types/qrcode": "^1.5.5",
     "banani": "^1.0.8",
+    "banani-bns": "^0.0.9",
     "bip39": "^3.1.0",
     "crypto-browserify": "^3.12.1",
     "next": "15.1.6",

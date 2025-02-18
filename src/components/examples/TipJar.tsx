@@ -8,7 +8,7 @@ const TIP_ADDRESS =
   'ban_1cosmic1qkfnur4xnqdz3hy8zpofjxqzgpibm8ei3hnohfa8owbky91jnmtk';
 
 export function TipJar() {
-  const { isConnected, sendBanano, getUserBalance } = useWallet();
+  const { wallet, isConnected } = useWallet();
   const [selectedTip, setSelectedTip] = useState<number | null>(null);
   const [isDonating, setIsDonating] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -18,19 +18,16 @@ export function TipJar() {
   const tipOptions = [0.1, 1, 10];
 
   const handleDonate = async () => {
-    if (!isConnected || selectedTip === null) return;
+    if (!isConnected || !wallet || selectedTip === null) return;
     setIsDonating(true);
     setFeedback(null);
     setError(null);
     try {
-      // Send the selected tip amount to the preset address.
-      const hash = await sendBanano(
+      const hash = await wallet.send(
         TIP_ADDRESS as `ban_${string}`,
-        selectedTip.toString()
+        `${selectedTip}` as `${number}`
       );
       setFeedback(`Thank you for your donation! Transaction hash: ${hash}`);
-      // Update wallet balance (if needed).
-      await getUserBalance();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to donate');
     } finally {

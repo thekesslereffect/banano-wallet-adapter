@@ -2,9 +2,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
+import * as banani from 'banani';
 
 export function CrashGame() {
-  const { address, isConnected, sendBanano, getBalance, getUserBalance } = useWallet();
+  const { wallet, isConnected } = useWallet();
   const betAmount = '0.1';
   const gameWalletAddress = process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS;
 
@@ -29,28 +30,28 @@ export function CrashGame() {
     • If you cash out and your locked multiplier is less than the secret multiplier, you win!
     • However, if your cash-out multiplier is equal to or exceeds the secret multiplier, you lose your bet.
     • House Edge: There is a 1% chance (adjustable via the HOUSE_EDGE_PROB environment variable) that the game will immediately crash at 1.00x.
-    • Note: Your payout is capped at 2.5% of the game wallet’s balance.
+    • Note: Your payout is capped at 2.5% of the game wallet's balance.
   `;
 
   // Fetch game balance when component mounts
   useEffect(() => {
     const fetchGameBalance = async () => {
-      if (!gameWalletAddress) return;
+      if (!gameWalletAddress || !wallet) return;
 
       try {
-        const balance = await getBalance(gameWalletAddress as `ban_${string}`);
-        setGameBalance(balance);
+        const info = await wallet.rpc.get_account_info(gameWalletAddress as `ban_${string}`);
+        setGameBalance(banani.raw_to_whole(BigInt(info.balance)));
       } catch (e) {
         console.error('Error fetching initial game balance:', e);
       }
     };
 
     fetchGameBalance();
-  }, [getBalance, gameWalletAddress]);
+  }, [wallet, gameWalletAddress]);
 
   // Start a new game.
   const startGame = async () => {
-    if (!isConnected || !address || !gameWalletAddress) return;
+    if (!isConnected || !wallet || !gameWalletAddress) return;
     // Reset state for a new round.
     setGameActive(true);
     setMultiplier(1.0);
@@ -60,11 +61,11 @@ export function CrashGame() {
     setIsBetting(true);
 
     try {
-      // Place the bet: send 0.1 BAN from the player's wallet to the game wallet.
-      await sendBanano(gameWalletAddress as `ban_${string}`, betAmount);
-      await getUserBalance();
+      await wallet.send(
+        gameWalletAddress as `ban_${string}`, 
+        betAmount as `${number}`
+      );
 
-      // Start the multiplier simulation: increase multiplier by roughly 1% every 100ms.
       const id = setInterval(() => {
         setMultiplier((prev) => Number((prev + prev * 0.01).toFixed(2)));
       }, 100);
@@ -79,7 +80,7 @@ export function CrashGame() {
 
   // Cash out: record the locked multiplier and call the API.
   const cashOut = async () => {
-    if (!gameActive || hasCashedOut) return;
+    if (!gameActive || hasCashedOut || !wallet) return;
     setHasCashedOut(true);
 
     try {
@@ -88,7 +89,7 @@ export function CrashGame() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
-          playerAddress: address,
+          playerAddress: wallet.address,
           cashedOutMultiplier: multiplier,
         }),
       });
@@ -101,8 +102,8 @@ export function CrashGame() {
         setResult(data.message);
       }
 
-      const newGameBalance = await getBalance(gameWalletAddress as `ban_${string}`);
-      setGameBalance(newGameBalance);
+      const newGameBalance = await wallet.rpc.get_account_info(gameWalletAddress as `ban_${string}`);
+      setGameBalance(banani.raw_to_whole(BigInt(newGameBalance.balance)));
 
     } catch (error) {
       setResult(error instanceof Error ? error.message : "Error cashing out.");

@@ -2,6 +2,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
+import * as banani from 'banani';
 
 interface Transaction {
   type: 'send' | 'receive';
@@ -11,34 +12,61 @@ interface Transaction {
   timestamp: number;
 }
 
+interface AccountHistory {
+  type: string;
+  account: string;
+  amount: string;
+  hash: string;
+  local_timestamp: string;
+}
+
+interface RPCResponse {
+  history: AccountHistory[];
+}
+
 export function TransactionHistory() {
-  const { address, isConnected, getTransactionHistory, balance } = useWallet();
+  const { wallet, isConnected } = useWallet();
   const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    if (!isConnected || !address) {
+    if (!isConnected || !wallet) {
       setTransactions([]);
       return;
     }
 
     let isMounted = true;
-    (async () => {
+    const fetchHistory = async () => {
       setLoading(true);
       try {
-        const history = await getTransactionHistory(address as `ban_${string}`);
-        if (isMounted) setTransactions(history);
+        const response = await wallet.rpc.call({
+          action: 'account_history',
+          account: wallet.address as `ban_${string}`,
+          count: '10'
+        });
+        
+        const typedResponse = response as unknown as RPCResponse;
+        if (isMounted && typedResponse.history) {
+          setTransactions(typedResponse.history.map((tx: AccountHistory) => ({
+            type: tx.type as 'send' | 'receive',
+            account: tx.account,
+            amount: banani.raw_to_whole(BigInt(tx.amount)),
+            hash: tx.hash,
+            timestamp: Number(tx.local_timestamp),
+          })));
+        }
       } catch (error) {
         console.error('Transaction history error:', error);
       } finally {
         if (isMounted) setLoading(false);
       }
-    })();
+    };
 
+    fetchHistory();
     return () => {
       isMounted = false;
     };
-  }, [isConnected, address, balance, getTransactionHistory]);
+  }, [isConnected, wallet]);
 
   if (!isConnected) return null;
 

@@ -45,7 +45,7 @@ export const buttonThemes: Record<ThemeName, ButtonTheme> = {
   },
   yellow: {
     backgroundColor: 'bg-gradient-to-b from-yellow-400 to-yellow-500',
-    textColor: 'text-black',
+    textColor: 'text-white',
     hoverColor: 'hover:from-yellow-300 hover:to-yellow-400',
     shadowColor: 'shadow-yellow-500/20 hover:shadow-yellow-500/30',
   },
@@ -91,7 +91,7 @@ export function BananoConnectButton({
   modalTheme = 'light',
   className = '',
 }: BananoConnectButtonProps) {
-  const { address, balance, isConnected, isConnecting, connect, disconnect, generateNewWallet, seed } = useWallet();
+  const { address, balance, bnsName, seed, isConnected, isConnecting, connect, disconnect, generateNewWallet } = useWallet();
   const [showModal, setShowModal] = useState(false);
   const [mnemonic, setMnemonic] = useState('');
   const [error, setError] = useState('');
@@ -154,7 +154,7 @@ export function BananoConnectButton({
     try {
       await navigator.clipboard.writeText(seed);
     } catch {
-      console.error('Failed to copy seed:');
+      console.error('Failed to copy seed');
     }
   };
 
@@ -164,7 +164,7 @@ export function BananoConnectButton({
     return (
       <div className="relative inline-block">
         <button className={baseClasses} onClick={() => setShowModal(true)}>
-          <span>{truncateAddress(address)}</span>
+          <span>{bnsName || truncateAddress(address)}</span>
           <span>({balance || '0.00'} BAN)</span>
         </button>
         {showModal && (

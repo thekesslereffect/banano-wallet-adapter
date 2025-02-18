@@ -154,6 +154,13 @@ All example components are showcased in an interactive selector interface, makin
 - Error handling and validation
 - Support for both RAW and BANANO units
 
+### Banano Name Service (BNS)
+- Resolve BNS names to addresses
+- Reverse lookup of addresses to BNS names
+- Support for multiple TLDs (.ban, .mictest, .jtv)
+- Efficient caching of resolved names
+- Send to BNS addresses (e.g., name.ban)
+
 ### User Experience
 - Loading states for all operations
 - Error feedback and handling
@@ -161,12 +168,6 @@ All example components are showcased in an interactive selector interface, makin
 - Transaction history with timestamps
 - Clean and modern UI components
 - Interactive component showcase
-
-### Security
-- Client-side encryption
-- No seed transmission
-- Secure storage implementation
-- Password-based key derivation
 
 ## 🎨 Customization
 
@@ -190,14 +191,24 @@ You can customize the wallet behavior by modifying:
 const {
   address,          // Current wallet address
   balance,          // Current balance in BANANO
+  bnsName,          // BNS name if available
   isConnected,      // Connection status
-  isLoadingBalance, // Balance loading state
+  isConnecting,     // Connection in progress
+  resolveBNS,       // Resolve BNS name to address
   connect,          // Connect wallet function
   disconnect,       // Disconnect wallet function
-  sendBanano,       // Send BANANO function
-  getTransactionHistory, // Get transaction history
-  getBalance,       // Get balance for any address
+  generateNewWallet, // Generate new wallet
 } = useWallet();
+```
+
+### BNS Resolution
+```typescript
+// Resolve a BNS name to an address
+const address = await resolveBNS('name', 'ban'); // Returns ban_ address or null
+
+// Send to BNS address
+const { wallet } = useWallet();
+await wallet.send('name.ban', '1.23');
 ```
 
 ### Components
