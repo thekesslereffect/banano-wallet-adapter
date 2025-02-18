@@ -8,7 +8,7 @@ const TIP_ADDRESS =
   'ban_1cosmic1qkfnur4xnqdz3hy8zpofjxqzgpibm8ei3hnohfa8owbky91jnmtk';
 
 export function TipJar() {
-  const { wallet, isConnected } = useWallet();
+  const { wallet, isConnected, updateBalance } = useWallet();
   const [selectedTip, setSelectedTip] = useState<number | null>(null);
   const [isDonating, setIsDonating] = useState(false);
   const [feedback, setFeedback] = useState<string | null>(null);
@@ -32,6 +32,7 @@ export function TipJar() {
       setError(err instanceof Error ? err.message : 'Failed to donate');
     } finally {
       setIsDonating(false);
+      await updateBalance();
     }
   };
 

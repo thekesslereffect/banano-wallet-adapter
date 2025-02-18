@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function SendBananoForm() {
-  const { wallet, isConnected, resolveBNS } = useWallet();
+  const { wallet, isConnected, resolveBNS, updateBalance } = useWallet();
   const [toAddress, setToAddress] = useState('');
   const [amount, setAmount] = useState('');
   const [feedback, setFeedback] = useState<{ error?: string; success?: string }>({});
@@ -56,6 +56,7 @@ export function SendBananoForm() {
       setFeedback({ error: error instanceof Error ? error.message : 'Error sending BANANO' });
     } finally {
       setIsLoading(false);
+      await updateBalance();
     }
   };
 

@@ -7,7 +7,7 @@ import * as banani from 'banani';
 type Guess = 'heads' | 'tails';
 
 export function CoinFlip() {
-  const { wallet, isConnected } = useWallet();
+  const { wallet, isConnected, updateBalance } = useWallet();
   const [selectedGuess, setSelectedGuess] = useState<Guess | null>(null);
   const [isPlaying, setIsPlaying] = useState(false);
   const [result, setResult] = useState<{ won: boolean; result: Guess; hash?: string } | null>(null);
@@ -78,6 +78,7 @@ export function CoinFlip() {
       // Update the game wallet balance after the game.
       const newGameBalance = await wallet.rpc.get_account_info(gameWalletAddress as `ban_${string}`);
       setGameBalance(banani.raw_to_whole(BigInt(newGameBalance.balance)));
+      await updateBalance();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to play game');
     } finally {

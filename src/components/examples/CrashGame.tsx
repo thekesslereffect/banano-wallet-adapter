@@ -5,7 +5,7 @@ import { useWallet } from '@/lib/banano-wallet-adapter';
 import * as banani from 'banani';
 
 export function CrashGame() {
-  const { wallet, isConnected } = useWallet();
+  const { wallet, isConnected, updateBalance } = useWallet();
   const betAmount = '0.1';
   const gameWalletAddress = process.env.NEXT_PUBLIC_GAME_WALLET_ADDRESS;
 
@@ -75,6 +75,7 @@ export function CrashGame() {
       setGameActive(false);
     } finally {
       setIsBetting(false);
+      await updateBalance();
     }
   };
 

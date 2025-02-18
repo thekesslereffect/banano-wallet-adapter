@@ -26,6 +26,7 @@ interface WalletContextType {
   disconnect: () => void;
   generateNewWallet: () => Promise<{ mnemonic: string; address: string }>;
   lookupBNS: (address: `ban_${string}` | `nano_${string}`) => Promise<string | null>;
+  updateBalance: () => Promise<void>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -165,6 +166,36 @@ export function BananoWalletProvider({
     return { mnemonic, address: newAddress };
   }, [rpc, connect]);
 
+  const updateBalance = useCallback(async () => {
+    if (!wallet) return;
+    
+    try {
+      const info = await wallet.get_account_info();
+      await wallet.receive_all();
+      setBalance(Number(banani.raw_to_whole(BigInt(info.balance))).toFixed(2));
+    } catch {
+      try {
+        const receivable = await wallet.rpc.call({
+          action: 'receivable',
+          account: wallet.address as `ban_${string}`,
+          count: '1',
+          threshold: '1'
+        });
+
+        if (receivable.blocks && Object.keys(receivable.blocks).length > 0) {
+          await wallet.receive_all();
+          const info = await wallet.get_account_info();
+          setBalance(Number(banani.raw_to_whole(BigInt(info.balance))).toFixed(2));
+        } else {
+          setBalance('0.00');
+        }
+      } catch (receiveError) {
+        console.error('Error checking receivable:', receiveError);
+        setBalance('0.00');
+      }
+    }
+  }, [wallet]);
+
   useEffect(() => {
     const tryReconnect = async () => {
       const seedRef = localStorage.getItem('bananoWalletSeedRef');
@@ -185,45 +216,19 @@ export function BananoWalletProvider({
     if (!wallet) return;
 
     let mounted = true;
-    const updateBalance = async () => {
-      try {
-        const info = await wallet.get_account_info();
-        if (mounted) {
-          await wallet.receive_all();
-          setBalance(Number(banani.raw_to_whole(BigInt(info.balance))).toFixed(2));
-        }
-      } catch {
-        try {
-          const receivable = await wallet.rpc.call({
-            action: 'receivable',
-            account: wallet.address as `ban_${string}`,
-            count: '1',
-            threshold: '1'
-          });
-
-          if (receivable.blocks && Object.keys(receivable.blocks).length > 0) {
-            await wallet.receive_all();
-            const info = await wallet.get_account_info();
-            if (mounted) {
-              setBalance(Number(banani.raw_to_whole(BigInt(info.balance))).toFixed(2));
-            }
-          } else {
-            if (mounted) setBalance('0.00');
-          }
-        } catch (receiveError) {
-          console.error('Error checking receivable:', receiveError);
-          if (mounted) setBalance('0.00');
-        }
+    const checkBalance = async () => {
+      if (mounted) {
+        await updateBalance();
       }
     };
 
-    updateBalance();
-    const interval = setInterval(updateBalance, 10000);
+    checkBalance();
+    const interval = setInterval(checkBalance, 10000);
     return () => {
       mounted = false;
       clearInterval(interval);
     };
-  }, [wallet]);
+  }, [wallet, updateBalance]);
 
   useEffect(() => {
     if (!wallet?.address) return;
@@ -252,6 +257,7 @@ export function BananoWalletProvider({
     connect,
     disconnect,
     generateNewWallet,
+    updateBalance,
   }), [
     wallet,
     bnsName,
@@ -262,7 +268,8 @@ export function BananoWalletProvider({
     lookupBNS,
     connect,
     disconnect,
-    generateNewWallet
+    generateNewWallet,
+    updateBalance
   ]);
 
   return <WalletContext.Provider value={value}>{children}</WalletContext.Provider>;

@@ -4,7 +4,7 @@ import React, { useState } from 'react';
 import { useWallet } from '@/lib/banano-wallet-adapter';
 
 export function Faucet() {
-  const { wallet, address, isConnected } = useWallet();
+  const { wallet, address, isConnected, updateBalance } = useWallet();
   const [isClaiming, setIsClaiming] = useState(false);
   const [message, setMessage] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
@@ -36,6 +36,7 @@ export function Faucet() {
       setError(err instanceof Error ? err.message : 'Claim failed.');
     } finally {
       setIsClaiming(false);
+      await updateBalance();
     }
   };
 
