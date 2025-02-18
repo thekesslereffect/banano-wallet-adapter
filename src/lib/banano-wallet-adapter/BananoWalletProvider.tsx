@@ -25,6 +25,7 @@ interface WalletContextType {
   connect: (seedOrPrivateKey?: string) => Promise<string>;
   disconnect: () => void;
   generateNewWallet: () => Promise<{ mnemonic: string; address: string }>;
+  lookupBNS: (address: `ban_${string}` | `nano_${string}`) => Promise<string | null>;
 }
 
 const WalletContext = createContext<WalletContextType | undefined>(undefined);
@@ -176,11 +177,23 @@ export function BananoWalletProvider({
   const lookupBNS = async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
     for (const [tld] of Object.entries(TLD_MAPPING)) {
       try {
+        // Get domain info for this address and TLD
         console.log('Looking up BNS for address:', address, 'with TLD:', tld);
-        const domain = await resolver.resolve_backwards_ish(address as `ban_${string}`, tld);
+        const domain = await resolver.resolve_backwards_ish(address, tld);
         console.log('Domain:', domain);
-        if (domain?.name) return `${domain.name}.${tld}`;
-      } catch {
+        // If we got a domain back and it's not burned, use it
+        if (domain && !domain.burned) {
+          const bnsName = `${domain.name}.${tld}`;
+          console.log('Found BNS:', {
+            address,
+            tld,
+            name: domain.name,
+            history: domain.history
+          });
+          return bnsName;
+        }
+      } catch (e) {
+        // If resolve_backwards_ish fails, this address doesn't own a domain for this TLD
         continue;
       }
     }

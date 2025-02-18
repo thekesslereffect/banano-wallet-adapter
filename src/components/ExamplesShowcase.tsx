@@ -11,6 +11,7 @@ import { CrashGame } from '@/components/examples/CrashGame';
 import { Faucet } from '@/components/examples/Faucet';
 import { TokenGateExample } from '@/components/examples/TokenGateExample';
 import { CustomWalletGenerator } from '@/components/examples/CustomWalletGenerator';
+import { BNSLookup } from './examples/BNSLookup';
 
 const componentsMap: Record<string, ReactNode> = {
   Balance: <Balance />,
@@ -23,6 +24,7 @@ const componentsMap: Record<string, ReactNode> = {
   Faucet: <Faucet />,
   'Token Gate': <TokenGateExample />,
   'Custom Wallet Generator': <CustomWalletGenerator />,
+  'BNS Lookup': <BNSLookup />,
 };
 
 export function ExamplesShowcase() {
