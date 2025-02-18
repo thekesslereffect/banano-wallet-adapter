@@ -174,52 +174,31 @@ export function BananoWalletProvider({
   };
 
   const lookupBNS = async (address: `ban_${string}` | `nano_${string}`): Promise<string | null> => {
-    console.log('Looking up BNS for address:', address);
-    try {
-      // Try each TLD
-      for (const [tld] of Object.entries(TLD_MAPPING)) {
-        console.log('Checking TLD:', tld);
-        try {
-          // Debug: Check account info first
-          const accountInfo = await rpc.get_account_info(address);
-          if (!accountInfo?.open_block) continue;
-
-          const domain = await resolver.resolve_backwards_ish(
-            address,
-            tld
-          );
-          const bnsName = `${domain?.name}.${tld}`;
-          resolvedBnsCache.set(address, bnsName);
-          return bnsName;
-        } catch (e) {
-          console.log('Error checking TLD:', tld, e);
-          continue;
-        }
+    for (const [tld] of Object.entries(TLD_MAPPING)) {
+      try {
+        console.log('Looking up BNS for address:', address, 'with TLD:', tld);
+        const domain = await resolver.resolve_backwards_ish(address as `ban_${string}`, tld);
+        console.log('Domain:', domain);
+        if (domain?.name) return `${domain.name}.${tld}`;
+      } catch {
+        continue;
       }
-      console.log('No BNS name found');
-      resolvedBnsCache.set(address, '');
-      return null;
-    } catch (error) {
-      console.error('Error looking up BNS:', error);
-      return null;
     }
+    return null;
   };
 
-  // Use lookupBNS in the effect
   useEffect(() => {
-    if (!wallet?.address) {
-      console.log('No wallet address');
-      return;
-    }
+    if (!wallet?.address) return;
 
     if (resolvedBnsCache.has(wallet.address)) {
-      console.log('Using cached BNS for:', wallet.address);
-      const cached = resolvedBnsCache.get(wallet.address);
-      if (cached) setBnsName(cached);
+      setBnsName(resolvedBnsCache.get(wallet.address) || null);
       return;
     }
 
-    lookupBNS(wallet.address as `ban_${string}`).then(setBnsName);
+    lookupBNS(wallet.address as `ban_${string}`).then(name => {
+      if (name) resolvedBnsCache.set(wallet.address, name);
+      setBnsName(name);
+    });
   }, [wallet?.address, resolver, resolvedBnsCache]);
 
   const disconnect = () => {
