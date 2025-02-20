@@ -11,7 +11,7 @@ export default function Home() {
   const [modalTheme, setModalTheme] = useState<ModalThemeName>('light');
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-between p-24">
+    <main className="flex min-h-screen flex-col items-center justify-between p-4 md:p-8 lg:p-24">
       <div className="mx-auto">
         <header className="text-center mb-16">
           <h1 className="text-5xl sm:text-6xl font-extrabold tracking-tight mb-5">
