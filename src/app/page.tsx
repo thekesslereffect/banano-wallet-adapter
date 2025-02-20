@@ -5,6 +5,7 @@ import { BananoConnectButton } from '@/components/BananoConnectButton';
 import { ThemeSelector } from '@/components/ThemeSelector';
 import { ExamplesShowcase } from '@/components/ExamplesShowcase';
 import type { ThemeName, ModalThemeName } from '@/components/BananoConnectButton';
+import Link from 'next/link';
 
 export default function Home() {
   const [buttonTheme, setButtonTheme] = useState<ThemeName>('black');

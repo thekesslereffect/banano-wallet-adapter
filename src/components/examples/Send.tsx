@@ -94,10 +94,10 @@ export function SendBananoForm() {
         </button>
       </form>
       {feedback.error && (
-        <div className="p-4 text-sm text-red-500 bg-red-50 rounded-xl">{feedback.error}</div>
+        <div className="p-4 text-sm text-red-500 bg-red-50 rounded-xl break-words">{feedback.error}</div>
       )}
       {feedback.success && (
-        <div className="p-4 text-sm text-green-500 bg-green-50 rounded-xl">{feedback.success}</div>
+        <div className="p-4 text-sm text-green-500 bg-green-50 rounded-xl break-words">{feedback.success}</div>
       )}
     </div>
   );

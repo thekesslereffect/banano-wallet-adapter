@@ -62,12 +62,12 @@ export function Faucet() {
         {isClaiming ? 'Claiming...' : 'Claim Faucet'}
       </button>
       {message && (
-        <div className="p-4 rounded-xl bg-green-100 text-green-800 text-center">
+        <div className="p-4 rounded-xl bg-green-100 text-green-800 text-center break-words">
           {message}
         </div>
       )}
       {error && (
-        <div className="p-4 rounded-xl bg-red-100 text-red-800 text-center">
+        <div className="p-4 rounded-xl bg-red-100 text-red-800 text-center break-words">
           {error}
         </div>
       )}

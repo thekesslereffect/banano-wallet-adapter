@@ -79,12 +79,12 @@ export function TipJar() {
       </button>
 
       {feedback && (
-        <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-xl">
+        <div className="mt-4 p-3 bg-green-50 text-green-700 rounded-xl break-words">
           {feedback}
         </div>
       )}
       {error && (
-        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl">
+        <div className="mt-4 p-3 bg-red-50 text-red-700 rounded-xl break-words">
           {error}
         </div>
       )}

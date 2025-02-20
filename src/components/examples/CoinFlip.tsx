@@ -148,7 +148,7 @@ export function CoinFlip() {
           </p>
           <p className="text-sm mt-1">The coin landed on: {result.result}</p>
           {result.hash && (
-            <p className="text-xs mt-2">
+            <p className="text-xs mt-2 break-all">
               Transaction hash: {result.hash}
             </p>
           )}
