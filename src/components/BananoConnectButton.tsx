@@ -436,18 +436,18 @@ export function BananoConnectButton({
                 )}
                 <div style={{ userSelect: 'none' }} className="flex gap-3">
                   <button
-                    onClick={handleConnect}
-                    className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.primaryButton}`}
-                    disabled={isConnecting || !mnemonic || (useCustomPassword && !customPassword)}
-                  >
-                    {isConnecting ? 'Connecting...' : 'Connect'}
-                  </button>
-                  <button
                     onClick={handleGenerateNew}
                     className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.secondaryButton}`}
                     disabled={isConnecting}
                   >
                     Generate New Wallet
+                  </button>
+                  <button
+                    onClick={handleConnect}
+                    className={`flex-1 rounded-2xl px-4 py-3 text-sm font-medium transition-colors ${selectedModalTheme.primaryButton}`}
+                    disabled={isConnecting || !mnemonic || (useCustomPassword && !customPassword)}
+                  >
+                    {isConnecting ? 'Connecting...' : 'Connect'}
                   </button>
                 </div>
               </div>
